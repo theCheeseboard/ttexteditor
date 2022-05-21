@@ -214,6 +214,7 @@ void TextCaret::insertText(QString text) {
         TextEditorPrivate::Line* newLine = new TextEditorPrivate::Line();
         newLine->contents = splitLines.takeFirst();
         d->editor->d->lines.insert(d->line + 1, newLine);
+        d->editor->repositionElements();
 
         for (TextCaret* caret : d->editor->d->carets) {
             if (caret->d->line > d->line) {
@@ -245,6 +246,7 @@ void TextCaret::backspace() {
         }
 
         d->editor->d->lines.removeAll(lineToRemove);
+        d->editor->repositionElements();
     } else {
         TextEditorPrivate::Line* line = d->editor->d->lines.at(d->line);
         line->contents.remove(d->pos - 1, 1);

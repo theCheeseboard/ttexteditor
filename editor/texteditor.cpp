@@ -12,6 +12,8 @@
 #include "commands/careterasecommand.h"
 #include "commands/carettextcommand.h"
 
+#include "rendering/compilerissuerenderstep.h".h "
+
 #include "texteditor_p.h"
 
 TextEditor::TextEditor(QWidget* parent) :
@@ -47,6 +49,8 @@ TextEditor::TextEditor(QWidget* parent) :
     d->carets.first()->setIsPrimary(true);
 
     d->colorScheme = new TextEditorColorScheme(this);
+
+    this->pushRenderStep(new CompilerIssueRenderStep(this));
 
     this->repositionElements();
     this->setLineProperty(3, CompilationError, "Unknown type name 'Line'");
@@ -95,8 +99,23 @@ QVariantList TextEditor::lineProperties(int line, QString property) {
     return d->lines.at(line)->properties.values(property);
 }
 
+void TextEditor::pushRenderStep(TextEditorRenderStep* renderStep) {
+    d->additionalRenderSteps.append(renderStep);
+    std::sort(d->additionalRenderSteps.begin(), d->additionalRenderSteps.end(), [=](TextEditorRenderStep* first, TextEditorRenderStep* second) {
+        return first->priority() < second->priority();
+    });
+}
+
 TextEditorColorScheme* TextEditor::colorScheme() {
     return d->colorScheme;
+}
+
+QScrollBar* TextEditor::verticalScrollBar() {
+    return d->vScrollBar;
+}
+
+QScrollBar* TextEditor::horizontalScrollBar() {
+    return d->hScrollBar;
 }
 
 void TextEditor::repositionElements() {
@@ -115,6 +134,9 @@ void TextEditor::repositionElements() {
     hsGeometry.moveBottom(this->height());
     d->hScrollBar->setGeometry(hsGeometry);
     d->hScrollBar->setPageStep(this->width());
+
+    int fullHeight = this->lineTop(d->lines.length() - 1) + this->lineHeight(d->lines.length() - 1) + this->height() / 2;
+    d->vScrollBar->setMaximum(qMax(0, fullHeight - this->height()));
 }
 
 int TextEditor::leftMarginWidth() {
@@ -373,6 +395,10 @@ void TextEditor::paintEvent(QPaintEvent* event) {
 
     for (TextCaret* caret : d->carets) {
         caret->drawCaret(&painter);
+    }
+
+    for (TextEditorRenderStep* step : d->additionalRenderSteps) {
+        step->paint(&painter);
     }
 }
 

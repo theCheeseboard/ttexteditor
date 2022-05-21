@@ -8,6 +8,7 @@
 #include <QString>
 #include <QUndoStack>
 
+class TextEditorRenderStep;
 struct TextEditorPrivate {
         struct Line {
                 QString contents;
@@ -28,6 +29,8 @@ struct TextEditorPrivate {
         TextEditorColorScheme* colorScheme;
 
         bool simplifyingCarets = false;
+
+        QList<TextEditorRenderStep*> additionalRenderSteps;
 
         static QMap<TextEditor::KnownLineProperty, QString> lineProperties;
         static QList<TextEditor::KnownLineProperty> multiLineProperties;

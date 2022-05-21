@@ -14,6 +14,7 @@ set(SOURCES
     commands/texteditorcommand.cpp
     texteditorlineproperties.cpp
     rendering/texteditorrenderstep.cpp
+    rendering/compilerissuerenderstep.cpp
 )
 
 set(HEADERS
@@ -28,6 +29,7 @@ set(PRIVATE_HEADERS
     commands/carettextcommand.h
     commands/careterasecommand.h
     commands/texteditorcommand.h
+    rendering/compilerissuerenderstep.h
 )
 
 add_library(ttexteditor SHARED ${SOURCES} ${HEADERS} ${PRIVATE_HEADERS})

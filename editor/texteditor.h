@@ -3,11 +3,13 @@
 
 #include <QWidget>
 
+class QScrollBar;
 class TextEditorColorScheme;
 class TextCaret;
 class CaretTextCommand;
 class CaretEraseCommand;
 class TextEditorCommand;
+class TextEditorRenderStep;
 struct TextEditorPrivate;
 class TextEditor : public QWidget {
         Q_OBJECT
@@ -30,7 +32,12 @@ class TextEditor : public QWidget {
         QVariantList lineProperties(int line, KnownLineProperty property);
         QVariantList lineProperties(int line, QString property);
 
+        void pushRenderStep(TextEditorRenderStep* renderStep);
+
         TextEditorColorScheme* colorScheme();
+
+        QScrollBar* verticalScrollBar();
+        QScrollBar* horizontalScrollBar();
 
     signals:
 
