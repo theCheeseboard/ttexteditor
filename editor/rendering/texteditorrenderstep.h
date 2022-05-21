@@ -5,6 +5,7 @@
 
 class QPainter;
 class TextEditor;
+class QMouseEvent;
 struct TextEditorRenderStepPrivate;
 class TextEditorRenderStep : public QObject {
         Q_OBJECT
@@ -15,7 +16,8 @@ class TextEditorRenderStep : public QObject {
         TextEditor* parentEditor();
 
         virtual uint priority() const;
-        virtual void paint(QPainter* painter) = 0;
+        virtual void paint(QPainter* painter, QRect redrawBounds) = 0;
+        virtual bool mouseMoveEvent(QMouseEvent* event);
 
     signals:
 

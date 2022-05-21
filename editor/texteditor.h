@@ -39,6 +39,12 @@ class TextEditor : public QWidget {
         QScrollBar* verticalScrollBar();
         QScrollBar* horizontalScrollBar();
 
+        int lineAtY(int y);
+        int lineTop(int line);
+        int lineHeight(int line);
+        int firstLineOnScreen();
+        int lastLineOnScreen();
+
     signals:
 
     protected:
@@ -53,10 +59,6 @@ class TextEditor : public QWidget {
 
         int leftMarginWidth();
 
-        int lineTop(int line);
-        int lineHeight(int line);
-        int firstLineOnScreen();
-        int lastLineOnScreen();
         QRect characterRect(QPoint linePos);
 
         void drawLine(int line, QPainter* painter);

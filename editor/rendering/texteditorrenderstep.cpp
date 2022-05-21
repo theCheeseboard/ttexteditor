@@ -23,3 +23,7 @@ TextEditor* TextEditorRenderStep::parentEditor() {
 uint TextEditorRenderStep::priority() const {
     return 1000;
 }
+
+bool TextEditorRenderStep::mouseMoveEvent(QMouseEvent* event) {
+    return false;
+}

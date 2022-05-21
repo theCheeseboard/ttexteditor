@@ -118,6 +118,15 @@ QScrollBar* TextEditor::horizontalScrollBar() {
     return d->hScrollBar;
 }
 
+int TextEditor::lineAtY(int y) {
+    for (int i = 0; i < d->lines.length(); i++) {
+        int top = lineTop(i);
+        int bottom = lineHeight(i) + top;
+        if (top < y && bottom >= y) return i;
+    }
+    return -1;
+}
+
 void TextEditor::repositionElements() {
     QRect vsGeometry;
     vsGeometry.setWidth(d->vScrollBar->width());
@@ -163,17 +172,13 @@ int TextEditor::lineHeight(int line) {
 }
 
 int TextEditor::firstLineOnScreen() {
-    for (int i = 0; i < d->lines.length(); i++) {
-        if (lineHeight(i) + lineTop(i) > d->vScrollBar->value()) return i;
-    }
-    return 0;
+    int line = lineAtY(d->vScrollBar->value());
+    return line == -1 ? 0 : line;
 }
 
 int TextEditor::lastLineOnScreen() {
-    for (int i = firstLineOnScreen(); i < d->lines.length(); i++) {
-        if (lineTop(i) > d->vScrollBar->value() + this->height()) return i - 1;
-    }
-    return d->lines.length() - 1;
+    int line = lineAtY(d->vScrollBar->value() + this->height());
+    return line == -1 ? d->lines.length() - 1 : line;
 }
 
 QRect TextEditor::characterRect(QPoint linePos) {
@@ -388,8 +393,11 @@ void TextEditor::paintEvent(QPaintEvent* event) {
     margin.setWidth(this->leftMarginWidth());
     painter.fillRect(margin, this->colorScheme()->item(TextEditorColorScheme::Margin));
 
-    // TODO: Take the draw rect into account
-    for (int i = this->firstLineOnScreen(); i <= this->lastLineOnScreen(); i++) {
+    int firstLine = lineAtY(event->rect().top());
+    if (firstLine == -1) firstLine = this->firstLineOnScreen();
+    int lastLine = lineAtY(event->rect().bottom());
+    if (lastLine == -1) lastLine = this->lastLineOnScreen();
+    for (int i = firstLine; i <= lastLine; i++) {
         drawLine(i, &painter);
     }
 
@@ -398,7 +406,7 @@ void TextEditor::paintEvent(QPaintEvent* event) {
     }
 
     for (TextEditorRenderStep* step : d->additionalRenderSteps) {
-        step->paint(&painter);
+        step->paint(&painter, event->rect());
     }
 }
 
@@ -439,15 +447,19 @@ void TextEditor::mouseReleaseEvent(QMouseEvent* event) {
 }
 
 void TextEditor::mouseMoveEvent(QMouseEvent* event) {
+    if (d->draggingCaret) {
+        d->draggingCaret->setAnchor(hitTest(event->pos()));
+        this->update();
+        return;
+    }
+
+    for (auto step = d->additionalRenderSteps.rbegin(); step != d->additionalRenderSteps.rend(); step++) {
+        if ((*step)->mouseMoveEvent(event)) return;
+    }
     if (event->pos().x() + d->hScrollBar->value() < leftMarginWidth()) {
         this->setCursor(QCursor(Qt::ArrowCursor));
     } else {
         this->setCursor(QCursor(Qt::IBeamCursor));
-    }
-
-    if (d->draggingCaret) {
-        d->draggingCaret->setAnchor(hitTest(event->pos()));
-        this->update();
     }
 }
 

@@ -1,10 +1,19 @@
 #include "compilerissuerenderstep.h"
 
 #include <QPainter>
+#include <tvariantanimation.h>
+
+struct CompilerIssueRenderStepPrivate {
+};
 
 CompilerIssueRenderStep::CompilerIssueRenderStep(TextEditor* parent) :
     TextEditorRenderStep{parent} {
+    d = new CompilerIssueRenderStepPrivate();
 }
 
-void CompilerIssueRenderStep::paint(QPainter* painter) {
+CompilerIssueRenderStep::~CompilerIssueRenderStep() {
+    delete d;
+}
+
+void CompilerIssueRenderStep::paint(QPainter* painter, QRect redrawBounds) {
 }
