@@ -12,7 +12,7 @@
 #include "commands/careterasecommand.h"
 #include "commands/carettextcommand.h"
 
-#include "rendering/compilerissuerenderstep.h".h "
+#include "rendering/compilerissuerenderstep.h"
 
 #include "texteditor_p.h"
 
@@ -54,6 +54,7 @@ TextEditor::TextEditor(QWidget* parent) :
 
     this->repositionElements();
     this->setLineProperty(3, CompilationError, "Unknown type name 'Line'");
+    this->setLineProperty(1, CompilationWarning, "Unused type 'FMP'");
 }
 
 TextEditor::~TextEditor() {
@@ -74,15 +75,18 @@ void TextEditor::setLineProperty(int line, KnownLineProperty property, QVariant 
     } else {
         this->setLineProperty(line, TextEditorPrivate::lineProperties.value(property), value);
     }
+    emit knownLinePropertyChanged(line, property);
 }
 
 void TextEditor::setLineProperty(int line, QString property, QVariant value) {
     d->lines.at(line)->properties.remove(property);
     d->lines.at(line)->properties.insert(property, value);
+    emit linePropertyChanged(line, property);
 }
 
 void TextEditor::setLinePropertyMulti(int line, QString property, QVariant value) {
     d->lines.at(line)->properties.insert(property, value);
+    emit linePropertyChanged(line, property);
 }
 
 void TextEditor::clearLineProperties(QString property) {
@@ -116,6 +120,10 @@ QScrollBar* TextEditor::verticalScrollBar() {
 
 QScrollBar* TextEditor::horizontalScrollBar() {
     return d->hScrollBar;
+}
+
+int TextEditor::numLines() {
+    return d->lines.length();
 }
 
 int TextEditor::lineAtY(int y) {

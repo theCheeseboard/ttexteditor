@@ -15,9 +15,13 @@ class CompilerIssueRenderStep : public TextEditorRenderStep {
     private:
         CompilerIssueRenderStepPrivate* d;
 
+        void updateExpandedWidth();
+        int errorColWidth();
+
         // TextEditorRenderStep interface
     public:
         void paint(QPainter* painter, QRect redrawBounds);
+        bool mouseMoveEvent(QMouseEvent* event);
 };
 
 #endif // COMPILERISSUERENDERSTEP_H

@@ -39,6 +39,7 @@ class TextEditor : public QWidget {
         QScrollBar* verticalScrollBar();
         QScrollBar* horizontalScrollBar();
 
+        int numLines();
         int lineAtY(int y);
         int lineTop(int line);
         int lineHeight(int line);
@@ -46,6 +47,8 @@ class TextEditor : public QWidget {
         int lastLineOnScreen();
 
     signals:
+        void knownLinePropertyChanged(int line, TextEditor::KnownLineProperty property);
+        void linePropertyChanged(int line, QString property);
 
     protected:
         friend TextCaret;
