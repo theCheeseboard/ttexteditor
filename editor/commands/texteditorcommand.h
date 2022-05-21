@@ -18,6 +18,7 @@ class TextEditorCommand : public QUndoCommand {
         };
 
         void pushEditorCommand(EditorCommand command);
+        void pushCaretSelectionEraseCommand(int caret);
 
     private:
         TextEditorCommandPrivate* d;

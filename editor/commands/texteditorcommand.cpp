@@ -26,6 +26,22 @@ void TextEditorCommand::pushEditorCommand(EditorCommand command) {
     d->commands.append(command);
 }
 
+void TextEditorCommand::pushCaretSelectionEraseCommand(int caret) {
+    TextCaret* c = d->editor->d->carets.at(caret);
+    QString textInAnchor;
+    for (int i = d->editor->linePosToChar(c->firstAnchor()); i < d->editor->linePosToChar(c->lastAnchor()); i++) {
+        QPoint linePos = d->editor->charToLinePos(i);
+        QString lineContents = d->editor->d->lines.at(linePos.y())->contents;
+        if (linePos.x() == lineContents.length()) {
+            textInAnchor += "\n";
+        } else {
+            textInAnchor += lineContents.at(linePos.x());
+        }
+    }
+
+    this->pushEditorCommand({caret, textInAnchor, false, false});
+}
+
 void TextEditorCommand::undo() {
     d->editor->d->loadCarets(d->lastCarets);
     for (auto command = d->commands.crbegin(); command != d->commands.crend(); command++) {

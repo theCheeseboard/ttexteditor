@@ -7,6 +7,13 @@
 CaretTextCommand::CaretTextCommand(TextEditor* editor, QString text) :
     TextEditorCommand(editor) {
     for (int i = 0; i < editor->d->carets.length(); i++) {
+        TextCaret* caret = editor->d->carets.at(i);
+
+        if (caret->firstAnchor() != caret->lastAnchor()) {
+            // Erase the selection first
+            this->pushCaretSelectionEraseCommand(i);
+        }
+
         this->pushEditorCommand({i,
             text,
             true,

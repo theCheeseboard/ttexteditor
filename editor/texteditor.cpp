@@ -367,7 +367,11 @@ void TextEditor::mousePressEvent(QMouseEvent* event) {
     } else {
         for (TextCaret* caret : d->carets) {
             if (caret->isPrimary()) {
-                caret->moveCaret(hitTest(event->pos()));
+                if (event->modifiers() == Qt::ShiftModifier) {
+                    caret->setAnchor(hitTest(event->pos()));
+                } else {
+                    caret->moveCaret(hitTest(event->pos()));
+                }
                 d->draggingCaret = caret;
             } else {
                 caret->discontinueAndDelete();

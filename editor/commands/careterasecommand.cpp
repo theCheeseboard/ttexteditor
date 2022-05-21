@@ -12,18 +12,7 @@ CaretEraseCommand::CaretEraseCommand(TextEditor* editor, bool backwardDelete) :
 
         if (caret->firstAnchor() != caret->lastAnchor()) {
             // Delete the text in the anchor
-            QString textInAnchor;
-            for (int i = editor->linePosToChar(caret->firstAnchor()); i < editor->linePosToChar(caret->lastAnchor()); i++) {
-                QPoint linePos = editor->charToLinePos(i);
-                QString lineContents = editor->d->lines.at(linePos.y())->contents;
-                if (linePos.x() == lineContents.length()) {
-                    textInAnchor += "\n";
-                } else {
-                    textInAnchor += lineContents.at(linePos.x());
-                }
-            }
-
-            this->pushEditorCommand({i, textInAnchor, false, false});
+            this->pushCaretSelectionEraseCommand(i);
         } else {
             QPoint caretPos = caret->linePos();
             if (caretPos.x() == 0 && caretPos.y() == 0) {
