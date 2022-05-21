@@ -16,6 +16,7 @@ struct TextCaretPrivate {
         int anchor;
 
         bool isPrimary = false;
+        bool discontinued = false;
 
         tVariantAnimation* anim;
 
@@ -261,8 +262,15 @@ QPoint TextCaret::linePos() {
 }
 
 void TextCaret::discontinueAndDelete() {
+    if (d->discontinued) return;
+
     emit discontinued();
     this->deleteLater();
+    d->discontinued = true;
+}
+
+bool TextCaret::isDiscontinued() {
+    return d->discontinued;
 }
 
 void TextCaret::moveCaret(QRect newPos) {

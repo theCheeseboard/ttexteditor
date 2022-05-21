@@ -27,6 +27,8 @@ struct TextEditorPrivate {
 
         TextEditorColorScheme* colorScheme;
 
+        bool simplifyingCarets = false;
+
         static QMap<TextEditor::KnownLineProperty, QString> lineProperties;
         static QList<TextEditor::KnownLineProperty> multiLineProperties;
 };

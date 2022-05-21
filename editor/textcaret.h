@@ -47,6 +47,7 @@ class TextCaret : public QObject {
         QPoint linePos();
 
         void discontinueAndDelete();
+        bool isDiscontinued();
 
     signals:
         void discontinued();

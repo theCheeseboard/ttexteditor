@@ -265,15 +265,42 @@ void TextEditor::addCaret(QPoint linePos) {
 }
 
 void TextEditor::simplifyCarets() {
-    QList<QPoint> foundCarets;
+    if (d->simplifyingCarets) return;
+    d->simplifyingCarets = true;
+
     for (TextCaret* caret : d->carets) {
-        QPoint linePos = caret->linePos();
-        if (foundCarets.contains(linePos)) {
-            caret->discontinueAndDelete();
-        } else {
-            foundCarets.append(linePos);
+        if (caret->isDiscontinued()) continue;
+        bool hasSelection = caret->firstAnchor() != caret->lastAnchor();
+        for (TextCaret* caret2 : d->carets) {
+            if (caret2 == caret) continue;
+            if (caret2->isDiscontinued()) continue;
+            if (caret2->isPrimary()) continue;
+
+            bool hasSelection2 = caret2->firstAnchor() != caret2->lastAnchor();
+            if (hasSelection && hasSelection2) {
+                // Merge the selection if required
+                if (this->linePosToChar(caret2->firstAnchor()) > this->linePosToChar(caret->lastAnchor()) || this->linePosToChar(caret2->lastAnchor()) < this->linePosToChar(caret->firstAnchor())) {
+                    // These two selections don't intersect
+                } else {
+                    // Merge the selections
+                    QPoint firstAnchor = this->charToLinePos(qMin(this->linePosToChar(caret->firstAnchor()), this->linePosToChar(caret2->firstAnchor())));
+                    QPoint lastAnchor = this->charToLinePos(qMax(this->linePosToChar(caret->lastAnchor()), this->linePosToChar(caret2->lastAnchor())));
+
+                    caret->moveCaret(firstAnchor);
+                    caret->setAnchor(lastAnchor);
+                    caret2->discontinueAndDelete();
+                }
+            } else if (hasSelection) {
+                // If caret2 is in between the selection, discontinue it
+                int linePosChar = this->linePosToChar(caret2->linePos());
+                if (this->linePosToChar(caret->firstAnchor()) < linePosChar && this->linePosToChar(caret->lastAnchor()) > linePosChar) caret2->discontinueAndDelete();
+            } else {
+                if (caret->linePos() == caret2->linePos()) caret2->discontinueAndDelete();
+            }
         }
     }
+
+    d->simplifyingCarets = false;
 }
 
 QPoint TextEditor::hitTest(QPoint pos) {
