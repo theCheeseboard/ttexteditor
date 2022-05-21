@@ -1,6 +1,7 @@
 #ifndef TEXTEDITOR_H
 #define TEXTEDITOR_H
 
+#include <QUrl>
 #include <QWidget>
 
 class QScrollBar;
@@ -46,9 +47,18 @@ class TextEditor : public QWidget {
         int firstLineOnScreen();
         int lastLineOnScreen();
 
+        QString text();
+        void setText(QString text);
+        void setCurrentFile(QUrl currentFile);
+        QUrl currentFile();
+        bool haveUnsavedChanges();
+        void setChangesSaved();
+
     signals:
         void knownLinePropertyChanged(int line, TextEditor::KnownLineProperty property);
         void linePropertyChanged(int line, QString property);
+        void currentFileChanged(QUrl currentFile);
+        void unsavedChangesChanged();
 
     protected:
         friend TextCaret;

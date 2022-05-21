@@ -7,6 +7,7 @@
 #include <QScrollBar>
 #include <QString>
 #include <QUndoStack>
+#include <QUrl>
 
 class TextEditorRenderStep;
 struct TextEditorPrivate {
@@ -31,6 +32,8 @@ struct TextEditorPrivate {
         bool simplifyingCarets = false;
 
         QList<TextEditorRenderStep*> additionalRenderSteps;
+
+        QUrl currentFile;
 
         static QMap<TextEditor::KnownLineProperty, QString> lineProperties;
         static QList<TextEditor::KnownLineProperty> multiLineProperties;

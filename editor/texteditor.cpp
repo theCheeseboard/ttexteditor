@@ -24,12 +24,14 @@ TextEditor::TextEditor(QWidget* parent) :
     this->setMouseTracking(true);
     this->setFocusPolicy(Qt::StrongFocus);
 
-    d->lines.append(new TextEditorPrivate::Line{"Line 1 Text"});
-    d->lines.append(new TextEditorPrivate::Line{"Line 2 Text"});
-    d->lines.append(new TextEditorPrivate::Line{"Line 3 Text"});
-    d->lines.append(new TextEditorPrivate::Line{"Line 4 Text"});
-    d->lines.append(new TextEditorPrivate::Line{"Line 5 Text"});
+    //    d->lines.append(new TextEditorPrivate::Line{"Line 1 Text"});
+    //    d->lines.append(new TextEditorPrivate::Line{"Line 2 Text"});
+    //    d->lines.append(new TextEditorPrivate::Line{"Line 3 Text"});
+    //    d->lines.append(new TextEditorPrivate::Line{"Line 4 Text"});
+    //    d->lines.append(new TextEditorPrivate::Line{"Line 5 Text"});
+    d->lines.append(new TextEditorPrivate::Line{""});
     d->undoStack = new QUndoStack(this);
+    connect(d->undoStack, &QUndoStack::cleanChanged, this, &TextEditor::unsavedChangesChanged);
 
     d->vScrollBar = new QScrollBar(Qt::Vertical);
     d->vScrollBar->setFixedWidth(this->style()->pixelMetric(QStyle::PM_ScrollBarExtent));
@@ -44,8 +46,6 @@ TextEditor::TextEditor(QWidget* parent) :
     d->hScrollBar->show();
 
     addCaret(0, 0);
-    addCaret(1, 1);
-    addCaret(2, 5);
     d->carets.first()->setIsPrimary(true);
 
     d->colorScheme = new TextEditorColorScheme(this);
@@ -53,8 +53,8 @@ TextEditor::TextEditor(QWidget* parent) :
     this->pushRenderStep(new CompilerIssueRenderStep(this));
 
     this->repositionElements();
-    this->setLineProperty(3, CompilationError, "Unknown type name 'Line'");
-    this->setLineProperty(1, CompilationWarning, "Unused type 'FMP'");
+    //    this->setLineProperty(3, CompilationError, "Unknown type name 'Line'");
+    //    this->setLineProperty(1, CompilationWarning, "Unused type 'FMP'");
 }
 
 TextEditor::~TextEditor() {
@@ -187,6 +187,58 @@ int TextEditor::firstLineOnScreen() {
 int TextEditor::lastLineOnScreen() {
     int line = lineAtY(d->vScrollBar->value() + this->height());
     return line == -1 ? d->lines.length() - 1 : line;
+}
+
+QString TextEditor::text() {
+    QString text;
+    for (auto line = d->lines.cbegin(); line != d->lines.cend(); line++) {
+        // TODO: Configurable line endings
+        text.append((*line)->contents);
+        if (line != d->lines.cend() - 1) text.append("\n");
+    }
+    return text;
+}
+
+void TextEditor::setText(QString text) {
+    d->undoStack->clear();
+
+    // Clear all the carets
+    for (auto caret : d->carets) {
+        if (caret->isPrimary()) {
+            caret->moveCaret(0, 0);
+        } else {
+            caret->discontinueAndDelete();
+        }
+    }
+
+    d->lineProperties.clear();
+    d->multiLineProperties.clear();
+
+    qDeleteAll(d->lines);
+    d->lines.clear();
+
+    for (const auto& line : text.split("\n")) {
+        auto l = new TextEditorPrivate::Line;
+        l->contents = line;
+        d->lines.append(l);
+    }
+}
+
+void TextEditor::setCurrentFile(QUrl currentFile) {
+    d->currentFile = currentFile;
+    emit currentFileChanged(currentFile);
+}
+
+QUrl TextEditor::currentFile() {
+    return d->currentFile;
+}
+
+bool TextEditor::haveUnsavedChanges() {
+    return !d->undoStack->isClean();
+}
+
+void TextEditor::setChangesSaved() {
+    d->undoStack->setClean();
 }
 
 QRect TextEditor::characterRect(QPoint linePos) {
