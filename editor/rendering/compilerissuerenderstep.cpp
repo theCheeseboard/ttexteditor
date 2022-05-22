@@ -52,7 +52,7 @@ void CompilerIssueRenderStep::updateExpandedWidth() {
     d->expandedWidth = longestWidth + SC_DPI_W(30, parent);
 }
 
-int CompilerIssueRenderStep::errorColWidth() {
+int CompilerIssueRenderStep::errorColWidth() const {
     TextEditor* parent = this->parentEditor();
     int lowWidth = SC_DPI_W(24, parent) + parent->verticalScrollBar()->width();
     int highWidth = d->expandedWidth;
@@ -61,7 +61,7 @@ int CompilerIssueRenderStep::errorColWidth() {
     return lowWidth + selectedRange;
 }
 
-void CompilerIssueRenderStep::paint(QPainter* painter, QRect redrawBounds) {
+void CompilerIssueRenderStep::paint(QPainter* painter, QRect outputBounds, QRect redrawBounds) {
     TextEditor* parent = this->parentEditor();
 
     painter->save();
@@ -78,8 +78,8 @@ void CompilerIssueRenderStep::paint(QPainter* painter, QRect redrawBounds) {
             QRect lineRect;
             lineRect.setHeight(parent->lineHeight(i));
             lineRect.moveTop(parent->lineTop(i) - parent->verticalScrollBar()->value());
-            lineRect.setWidth(this->errorColWidth());
-            lineRect.moveRight(parent->width());
+            lineRect.setWidth(outputBounds.width());
+            lineRect.moveRight(outputBounds.right());
             painter->fillRect(lineRect, background);
 
             painter->setClipRect(lineRect);
@@ -123,4 +123,16 @@ bool CompilerIssueRenderStep::mouseMoveEvent(QMouseEvent* event) {
         d->expanded = false;
     }
     return false;
+}
+
+TextEditorRenderStep::RenderSide CompilerIssueRenderStep::renderSide() const {
+    return Right;
+}
+
+int CompilerIssueRenderStep::renderWidth() const {
+    return errorColWidth();
+}
+
+QString CompilerIssueRenderStep::stepName() const {
+    return "CompilerIssues";
 }

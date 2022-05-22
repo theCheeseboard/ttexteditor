@@ -13,10 +13,28 @@ class TextEditorRenderStep : public QObject {
         explicit TextEditorRenderStep(TextEditor* parent = nullptr);
         ~TextEditorRenderStep();
 
-        TextEditor* parentEditor();
+        enum KnownRenderPriority : uint {
+            EditorBackground,
+            LineText,
+            Carets
+        };
 
+        TextEditor* parentEditor() const;
+
+        enum RenderSide {
+            Left,
+            Right,
+            Center,
+            StackWithOther
+        };
+
+        virtual RenderSide renderSide() const = 0;
+        virtual int renderWidth() const = 0;
+        virtual QString renderStack() const;
+
+        virtual QString stepName() const = 0;
         virtual uint priority() const;
-        virtual void paint(QPainter* painter, QRect redrawBounds) = 0;
+        virtual void paint(QPainter* painter, QRect outputBounds, QRect redrawBounds) = 0;
         virtual bool mouseMoveEvent(QMouseEvent* event);
 
     signals:

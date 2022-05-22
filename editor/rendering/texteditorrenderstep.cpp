@@ -16,8 +16,12 @@ TextEditorRenderStep::~TextEditorRenderStep() {
     delete d;
 }
 
-TextEditor* TextEditorRenderStep::parentEditor() {
+TextEditor* TextEditorRenderStep::parentEditor() const {
     return d->editor;
+}
+
+QString TextEditorRenderStep::renderStack() const {
+    return "";
 }
 
 uint TextEditorRenderStep::priority() const {

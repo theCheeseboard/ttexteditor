@@ -7,10 +7,12 @@
 class QScrollBar;
 class TextEditorColorScheme;
 class TextCaret;
-class CaretTextCommand;
-class CaretEraseCommand;
+class CaretRenderStep;
 class TextEditorCommand;
 class TextEditorRenderStep;
+class LineTextRenderStep;
+class CaretTextCommand;
+class CaretEraseCommand;
 struct TextEditorPrivate;
 class TextEditor : public QWidget {
         Q_OBJECT
@@ -47,6 +49,8 @@ class TextEditor : public QWidget {
         int firstLineOnScreen();
         int lastLineOnScreen();
 
+        int leftMarginWidth();
+
         QString text();
         void setText(QString text);
         void setCurrentFile(QUrl currentFile);
@@ -62,15 +66,15 @@ class TextEditor : public QWidget {
 
     protected:
         friend TextCaret;
+        friend CaretRenderStep;
+        friend TextEditorCommand;
         friend CaretTextCommand;
         friend CaretEraseCommand;
-        friend TextEditorCommand;
+        friend LineTextRenderStep;
         TextEditorPrivate* d;
 
     private:
         void repositionElements();
-
-        int leftMarginWidth();
 
         QRect characterRect(QPoint linePos);
 

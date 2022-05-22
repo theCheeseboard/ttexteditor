@@ -12,7 +12,9 @@
 #include "commands/careterasecommand.h"
 #include "commands/carettextcommand.h"
 
+#include "rendering/caretrenderstep.h"
 #include "rendering/compilerissuerenderstep.h"
+#include "rendering/linetextrenderstep.h"
 
 #include "texteditor_p.h"
 
@@ -24,11 +26,11 @@ TextEditor::TextEditor(QWidget* parent) :
     this->setMouseTracking(true);
     this->setFocusPolicy(Qt::StrongFocus);
 
-    //    d->lines.append(new TextEditorPrivate::Line{"Line 1 Text"});
-    //    d->lines.append(new TextEditorPrivate::Line{"Line 2 Text"});
-    //    d->lines.append(new TextEditorPrivate::Line{"Line 3 Text"});
-    //    d->lines.append(new TextEditorPrivate::Line{"Line 4 Text"});
-    //    d->lines.append(new TextEditorPrivate::Line{"Line 5 Text"});
+    d->lines.append(new TextEditorPrivate::Line{"Line 1 Text"});
+    d->lines.append(new TextEditorPrivate::Line{"Line 2 Text"});
+    d->lines.append(new TextEditorPrivate::Line{"Line 3 Text"});
+    d->lines.append(new TextEditorPrivate::Line{"Line 4 Text"});
+    d->lines.append(new TextEditorPrivate::Line{"Line 5 Text"});
     d->lines.append(new TextEditorPrivate::Line{""});
     d->undoStack = new QUndoStack(this);
     connect(d->undoStack, &QUndoStack::cleanChanged, this, &TextEditor::unsavedChangesChanged);
@@ -50,11 +52,13 @@ TextEditor::TextEditor(QWidget* parent) :
 
     d->colorScheme = new TextEditorColorScheme(this);
 
+    this->pushRenderStep(new LineTextRenderStep(this));
+    this->pushRenderStep(new CaretRenderStep(this));
     this->pushRenderStep(new CompilerIssueRenderStep(this));
 
     this->repositionElements();
-    //    this->setLineProperty(3, CompilationError, "Unknown type name 'Line'");
-    //    this->setLineProperty(1, CompilationWarning, "Unused type 'FMP'");
+    this->setLineProperty(3, CompilationError, "Unknown type name 'Line'");
+    this->setLineProperty(1, CompilationWarning, "Unused type 'FMP'");
 }
 
 TextEditor::~TextEditor() {
@@ -268,12 +272,6 @@ void TextEditor::drawLine(int line, QPainter* painter) {
     lineRect.moveTop(lineTop(line) - d->vScrollBar->value());
     lineRect.moveLeft(0 - d->hScrollBar->value());
 
-    QRect margin = lineRect;
-    margin.setWidth(this->leftMarginWidth());
-
-    QFont marginFont = this->font();
-    marginFont.setPointSizeF(this->font().pointSizeF() * 0.8);
-
     bool isActiveLine = false;
     for (TextCaret* caret : d->carets) {
         if (caret->linePos().y() == line) isActiveLine = true;
@@ -286,21 +284,6 @@ void TextEditor::drawLine(int line, QPainter* painter) {
     }
 
     painter->save();
-
-    // Draw margin elements
-    //    if (line == 16) {
-    //        // Breakpoint
-    //        QPolygon poly;
-    //        poly.append(margin.topLeft());
-    //        poly.append(margin.topRight());
-    //        poly.append(QPoint(margin.right() + margin.height() / 2, margin.center().y()));
-    //        poly.append(margin.bottomRight());
-    //        poly.append(margin.bottomLeft());
-
-    //        painter->setPen(Qt::transparent);
-    //        painter->setBrush(this->colorScheme()->item(AbstractEditorColorScheme::Breakpoint).color());
-    //        painter->drawPolygon(poly);
-    //    }
 
     if (!compilationErrors.isEmpty()) {
         painter->fillRect(lineRect, this->colorScheme()->item(TextEditorColorScheme::LineWithCompilationError).color());
@@ -315,26 +298,6 @@ void TextEditor::drawLine(int line, QPainter* painter) {
     } else {
         painter->setPen(this->colorScheme()->item(TextEditorColorScheme::MarginText).color());
     }
-
-    painter->setFont(marginFont);
-
-    QRect marginTextRect;
-
-    QString marginText = QString::number(line + 1);
-    marginTextRect.setWidth(QFontMetrics(marginFont).horizontalAdvance(marginText));
-    marginTextRect.setHeight(QFontMetrics(marginFont).height());
-    marginTextRect.moveCenter(margin.center());
-    marginTextRect.moveRight(margin.right() - SC_DPI_W(3, this));
-    painter->drawText(marginTextRect, Qt::AlignCenter, marginText);
-
-    painter->setFont(this->font());
-    QRect lineTextRect;
-    QString lineText = d->lines.at(line)->contents;
-    lineTextRect.setWidth(this->fontMetrics().horizontalAdvance(lineText));
-    lineTextRect.setHeight(this->fontMetrics().height());
-    lineTextRect.moveCenter(lineRect.center());
-    lineTextRect.moveLeft(margin.right() + SC_DPI_W(3, this));
-    painter->drawText(lineTextRect, Qt::AlignVCenter | Qt::AlignLeft, lineText);
 
     painter->restore();
 }
@@ -453,20 +416,43 @@ void TextEditor::paintEvent(QPaintEvent* event) {
     margin.setWidth(this->leftMarginWidth());
     painter.fillRect(margin, this->colorScheme()->item(TextEditorColorScheme::Margin));
 
-    int firstLine = lineAtY(event->rect().top());
-    if (firstLine == -1) firstLine = this->firstLineOnScreen();
-    int lastLine = lineAtY(event->rect().bottom());
-    if (lastLine == -1) lastLine = this->lastLineOnScreen();
-    for (int i = firstLine; i <= lastLine; i++) {
-        drawLine(i, &painter);
-    }
+    QRect baseRect;
+    baseRect.setTop(0);
+    baseRect.setHeight(this->height());
 
-    for (TextCaret* caret : d->carets) {
-        caret->drawCaret(&painter);
+    QHash<QString, QRect> stepRenderRects;
+    int currentLeftMargin = 0;
+    int currentRightMargin = this->width();
+    for (TextEditorRenderStep* step : d->additionalRenderSteps) {
+        if (step->renderSide() == TextEditorRenderStep::Left) {
+            QRect r;
+            r.setWidth(step->renderWidth());
+            r.moveLeft(currentLeftMargin);
+            stepRenderRects.insert(step->stepName(), r);
+            currentLeftMargin = r.right();
+        } else if (step->renderSide() == TextEditorRenderStep::Right) {
+            QRect r;
+            r.setWidth(step->renderWidth());
+            r.moveRight(currentRightMargin);
+            stepRenderRects.insert(step->stepName(), r);
+            currentRightMargin = r.left();
+        }
     }
 
     for (TextEditorRenderStep* step : d->additionalRenderSteps) {
-        step->paint(&painter, event->rect());
+        QRect renderRect;
+        if (stepRenderRects.contains(step->stepName())) {
+            renderRect = stepRenderRects.value(step->stepName());
+        } else {
+            if (step->renderSide() == TextEditorRenderStep::Center) {
+                renderRect = baseRect;
+                renderRect.setLeft(currentLeftMargin);
+                renderRect.setRight(currentRightMargin);
+            } else {
+                renderRect = stepRenderRects.value(step->renderStack());
+            }
+        }
+        step->paint(&painter, renderRect, event->rect());
     }
 }
 
