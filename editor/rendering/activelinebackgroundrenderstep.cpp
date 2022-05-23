@@ -8,7 +8,7 @@
 #include <QRect>
 
 ActiveLineBackgroundRenderStep::ActiveLineBackgroundRenderStep(TextEditor* parent) :
-    TextEditorPerLineRenderStep{parent} {
+    TextEditorRenderStep{parent} {
 }
 
 TextEditorRenderStep::RenderSide ActiveLineBackgroundRenderStep::renderSide() const {
@@ -27,20 +27,26 @@ uint ActiveLineBackgroundRenderStep::priority() const {
     return LineActiveHighlight;
 }
 
-void ActiveLineBackgroundRenderStep::paintLine(int line, QPainter* painter, QRect outputBounds, QRect redrawBounds) {
+void ActiveLineBackgroundRenderStep::paint(QPainter* painter, QRect outputBounds, QRect redrawBounds) {
     TextEditor* parent = parentEditor();
 
     painter->save();
+
+    QPolygon activeLinesPolygon;
+
     for (TextCaret* caret : parent->d->carets) {
-        if (caret->firstAnchor() == caret->lastAnchor() && caret->linePos().y() == line) {
-            QRect lineRect;
-            lineRect.setHeight(parent->lineHeight(line));
-            lineRect.moveTop(parent->lineTop(line) - parent->verticalScrollBar()->value());
+        if (caret->firstAnchor() == caret->lastAnchor()) {
+            QRect lineRect = caret->caretRect();
+            lineRect.moveTop(lineRect.top() - parent->verticalScrollBar()->value());
             lineRect.moveLeft(0);
             lineRect.setRight(parent->width());
-            painter->fillRect(lineRect, parent->colorScheme()->item(TextEditorColorScheme::ActiveLine).color());
-            break;
+            activeLinesPolygon = activeLinesPolygon.united(lineRect);
         }
     }
+
+    painter->setPen(Qt::transparent);
+    painter->setBrush(parent->colorScheme()->item(TextEditorColorScheme::ActiveLine));
+    painter->drawPolygon(activeLinesPolygon);
+
     painter->restore();
 }

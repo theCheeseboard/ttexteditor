@@ -1,9 +1,9 @@
 #ifndef ACTIVELINEBACKGROUNDRENDERSTEP_H
 #define ACTIVELINEBACKGROUNDRENDERSTEP_H
 
-#include "texteditorperlinerenderstep.h"
+#include "texteditorrenderstep.h"
 
-class ActiveLineBackgroundRenderStep : public TextEditorPerLineRenderStep {
+class ActiveLineBackgroundRenderStep : public TextEditorRenderStep {
         Q_OBJECT
     public:
         explicit ActiveLineBackgroundRenderStep(TextEditor* parent = nullptr);
@@ -16,10 +16,7 @@ class ActiveLineBackgroundRenderStep : public TextEditorPerLineRenderStep {
         int renderWidth() const;
         QString stepName() const;
         uint priority() const;
-
-        // TextEditorPerLineRenderStep interface
-    public:
-        void paintLine(int line, QPainter* painter, QRect outputBounds, QRect redrawBounds);
+        void paint(QPainter* painter, QRect outputBounds, QRect redrawBounds);
 };
 
 #endif // ACTIVELINEBACKGROUNDRENDERSTEP_H

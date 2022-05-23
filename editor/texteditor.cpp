@@ -102,7 +102,7 @@ void TextEditor::setLinePropertyMulti(int line, QString property, QVariant value
 }
 
 void TextEditor::clearLineProperties(QString property) {
-    for (auto *line : d->lines) {
+    for (auto* line : d->lines) {
         line->properties.remove(property);
     }
 }
@@ -224,7 +224,7 @@ void TextEditor::setText(QString text) {
     d->lines.clear();
 
     for (const auto& line : text.split("\n")) {
-        auto *l = new TextEditorPrivate::Line;
+        auto* l = new TextEditorPrivate::Line;
         l->contents = line;
         d->lines.append(l);
     }
@@ -359,6 +359,8 @@ void TextEditor::addCaret(int line, int pos) {
         d->carets.removeAll(caret);
     });
     d->carets.append(caret);
+
+    this->update();
 }
 
 void TextEditor::addCaret(QPoint linePos) {

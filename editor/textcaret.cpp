@@ -56,8 +56,6 @@ TextCaret::TextCaret(int line, int pos, TextEditor* parent) :
     moveCaret(line, pos);
     d->anim->stop();
     d->anim->setStartValue(d->anim->endValue());
-
-    //    parent->installEventFilter(this);
 }
 
 TextCaret::~TextCaret() {
@@ -65,7 +63,7 @@ TextCaret::~TextCaret() {
 }
 
 TextCaret* TextCaret::fromSavedCaret(SavedCaret caret) {
-    TextCaret* c = new TextCaret(caret.line, caret.pos, caret.parent);
+    auto* c = new TextCaret(caret.line, caret.pos, caret.parent);
     c->loadCaret(caret);
     return c;
 }
@@ -108,7 +106,6 @@ void TextCaret::moveCaret(QPoint linePos) {
 
 void TextCaret::moveCaretRelative(int lines, int cols) {
     int newLine = d->line + lines;
-    //    int newCol = d->pos + cols;
 
     if (newLine < 0) newLine = 0;
     if (newLine >= d->editor->d->lines.length()) newLine = d->editor->d->lines.length() - 1;
@@ -225,7 +222,7 @@ void TextCaret::insertText(QString text) {
 
     // Handle new lines
     while (!splitLines.isEmpty()) {
-        TextEditorPrivate::Line* newLine = new TextEditorPrivate::Line();
+        auto* newLine = new TextEditorPrivate::Line();
         newLine->contents = splitLines.takeFirst();
         d->editor->d->lines.insert(d->line + 1, newLine);
         d->editor->repositionElements();
@@ -277,6 +274,10 @@ QPoint TextCaret::linePos() {
     return QPoint(d->pos, d->line);
 }
 
+QRect TextCaret::caretRect() {
+    return d->anim->currentValue().toRect();
+}
+
 void TextCaret::discontinueAndDelete() {
     if (d->discontinued) return;
 
@@ -305,7 +306,7 @@ void TextCaret::moveCaret(QRect newPos) {
 bool TextCaret::eventFilter(QObject* watched, QEvent* event) {
     if (watched == d->editor) {
         if (event->type() == QEvent::KeyPress) {
-            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+            auto* keyEvent = static_cast<QKeyEvent*>(event);
             Qt::KeyboardModifiers modifiers = keyEvent->modifiers() & ~Qt::KeypadModifier;
 
             if (modifiers == Qt::NoModifier || modifiers == Qt::ShiftModifier) {
