@@ -1,10 +1,10 @@
 #ifndef COMPILERISSUERENDERSTEP_H
 #define COMPILERISSUERENDERSTEP_H
 
-#include "texteditorrenderstep.h"
+#include "texteditorperlinerenderstep.h"
 
 struct CompilerIssueRenderStepPrivate;
-class CompilerIssueRenderStep : public TextEditorRenderStep {
+class CompilerIssueRenderStep : public TextEditorPerLineRenderStep {
         Q_OBJECT
     public:
         explicit CompilerIssueRenderStep(TextEditor* parent = nullptr);
@@ -20,11 +20,14 @@ class CompilerIssueRenderStep : public TextEditorRenderStep {
 
         // TextEditorRenderStep interface
     public:
-        void paint(QPainter* painter, QRect outputBounds, QRect redrawBounds);
         bool mouseMoveEvent(QMouseEvent* event);
         RenderSide renderSide() const;
         int renderWidth() const;
         QString stepName() const;
+
+        // TextEditorPerLineRenderStep interface
+    public:
+        void paintLine(int line, QPainter* painter, QRect outputBounds, QRect redrawBounds);
 };
 
 #endif // COMPILERISSUERENDERSTEP_H

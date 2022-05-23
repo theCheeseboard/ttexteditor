@@ -13,7 +13,7 @@ struct CompilerIssueRenderStepPrivate {
 };
 
 CompilerIssueRenderStep::CompilerIssueRenderStep(TextEditor* parent) :
-    TextEditorRenderStep{parent} {
+    TextEditorPerLineRenderStep{parent} {
     d = new CompilerIssueRenderStepPrivate();
 
     d->expandingAnimation = new tVariantAnimation();
@@ -61,49 +61,6 @@ int CompilerIssueRenderStep::errorColWidth() const {
     return lowWidth + selectedRange;
 }
 
-void CompilerIssueRenderStep::paint(QPainter* painter, QRect outputBounds, QRect redrawBounds) {
-    TextEditor* parent = this->parentEditor();
-
-    painter->save();
-
-    int firstLine = parent->lineAtY(redrawBounds.top());
-    if (firstLine == -1) firstLine = parent->firstLineOnScreen();
-    int lastLine = parent->lineAtY(redrawBounds.bottom());
-    if (lastLine == -1) lastLine = parent->lastLineOnScreen();
-    for (int i = firstLine; i <= lastLine; i++) {
-        QVariantList compilationErrors = parent->lineProperties(i, TextEditor::CompilationError);
-        QVariantList compilationWarnings = parent->lineProperties(i, TextEditor::CompilationWarning);
-
-        auto drawLineAnnotation = [=](QColor background, QString str) {
-            QRect lineRect;
-            lineRect.setHeight(parent->lineHeight(i));
-            lineRect.moveTop(parent->lineTop(i) - parent->verticalScrollBar()->value());
-            lineRect.setWidth(outputBounds.width());
-            lineRect.moveRight(outputBounds.right());
-            painter->fillRect(lineRect, background);
-
-            painter->setClipRect(lineRect);
-            painter->setClipping(true);
-
-            QRect textRect = lineRect;
-            textRect.moveLeft(textRect.left() + SC_DPI_W(2, parent));
-            textRect.setWidth(painter->fontMetrics().horizontalAdvance(str) + SC_DPI_W(2, parent));
-            painter->setPen(Qt::white);
-            painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, str);
-
-            painter->setClipping(false);
-        };
-
-        if (!compilationErrors.isEmpty()) {
-            drawLineAnnotation(Qt::red, compilationErrors.first().toString());
-        } else if (!compilationWarnings.isEmpty()) {
-            drawLineAnnotation(QColor(200, 100, 0), compilationWarnings.first().toString());
-        }
-    }
-
-    painter->restore();
-}
-
 bool CompilerIssueRenderStep::mouseMoveEvent(QMouseEvent* event) {
     int x = event->pos().x();
     int triggerX = parentEditor()->width() - errorColWidth();
@@ -135,4 +92,37 @@ int CompilerIssueRenderStep::renderWidth() const {
 
 QString CompilerIssueRenderStep::stepName() const {
     return "CompilerIssues";
+}
+
+void CompilerIssueRenderStep::paintLine(int line, QPainter* painter, QRect outputBounds, QRect redrawBounds) {
+    auto parent = parentEditor();
+
+    QVariantList compilationErrors = parent->lineProperties(line, TextEditor::CompilationError);
+    QVariantList compilationWarnings = parent->lineProperties(line, TextEditor::CompilationWarning);
+
+    auto drawLineAnnotation = [=](QColor background, QString str) {
+        QRect lineRect;
+        lineRect.setHeight(parent->lineHeight(line));
+        lineRect.moveTop(parent->lineTop(line) - parent->verticalScrollBar()->value());
+        lineRect.setWidth(outputBounds.width());
+        lineRect.moveRight(outputBounds.right());
+        painter->fillRect(lineRect, background);
+
+        painter->setClipRect(lineRect);
+        painter->setClipping(true);
+
+        QRect textRect = lineRect;
+        textRect.moveLeft(textRect.left() + SC_DPI_W(2, parent));
+        textRect.setWidth(painter->fontMetrics().horizontalAdvance(str) + SC_DPI_W(2, parent));
+        painter->setPen(Qt::white);
+        painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, str);
+
+        painter->setClipping(false);
+    };
+
+    if (!compilationErrors.isEmpty()) {
+        drawLineAnnotation(Qt::red, compilationErrors.first().toString());
+    } else if (!compilationWarnings.isEmpty()) {
+        drawLineAnnotation(QColor(200, 100, 0), compilationWarnings.first().toString());
+    }
 }
