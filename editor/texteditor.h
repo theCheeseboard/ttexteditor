@@ -13,6 +13,8 @@ class TextEditorRenderStep;
 class LineTextRenderStep;
 class CaretTextCommand;
 class CaretEraseCommand;
+class LeftGutterTextRenderStep;
+class ActiveLineBackgroundRenderStep;
 struct TextEditorPrivate;
 class TextEditor : public QWidget {
         Q_OBJECT
@@ -49,14 +51,14 @@ class TextEditor : public QWidget {
         int firstLineOnScreen();
         int lastLineOnScreen();
 
-        int leftMarginWidth();
-
         QString text();
         void setText(QString text);
         void setCurrentFile(QUrl currentFile);
         QUrl currentFile();
         bool haveUnsavedChanges();
         void setChangesSaved();
+
+        QRect renderStepOutputArea(QString stepName);
 
     signals:
         void knownLinePropertyChanged(int line, TextEditor::KnownLineProperty property);
@@ -71,6 +73,8 @@ class TextEditor : public QWidget {
         friend CaretTextCommand;
         friend CaretEraseCommand;
         friend LineTextRenderStep;
+        friend LeftGutterTextRenderStep;
+        friend ActiveLineBackgroundRenderStep;
         TextEditorPrivate* d;
 
     private:
@@ -87,6 +91,8 @@ class TextEditor : public QWidget {
 
         int linePosToChar(QPoint linePos);
         QPoint charToLinePos(int c);
+
+        QMap<QString, QRect> renderStepOutputAreas();
 
         // QWidget interface
     protected:

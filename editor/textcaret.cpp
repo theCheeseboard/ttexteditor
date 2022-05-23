@@ -96,7 +96,7 @@ void TextCaret::moveCaret(int line, int pos) {
 
     QRect caretRect;
     caretRect.moveTop(d->editor->lineTop(line));
-    caretRect.moveLeft(d->editor->leftMarginWidth() + d->editor->fontMetrics().horizontalAdvance(lineContents.left(pos)));
+    caretRect.moveLeft(d->editor->renderStepOutputArea("LineText").left() + d->editor->fontMetrics().horizontalAdvance(lineContents.left(pos)));
     caretRect.setHeight(d->editor->lineHeight(line));
     caretRect.setWidth(SC_DPI_W(1, d->editor));
     moveCaret(caretRect);

@@ -11,8 +11,10 @@ LineTextRenderStep::LineTextRenderStep(TextEditor* parent) :
     TextEditorRenderStep{parent} {
 }
 
-void LineTextRenderStep::drawLine(int line, QPainter* painter) {
+void LineTextRenderStep::drawLine(int line, QRect outputBounds, QPainter* painter) {
     TextEditor* editor = parentEditor();
+
+    painter->save();
 
     QRect lineRect;
     lineRect.setHeight(editor->lineHeight(line));
@@ -20,31 +22,18 @@ void LineTextRenderStep::drawLine(int line, QPainter* painter) {
     lineRect.moveTop(editor->lineTop(line) - editor->verticalScrollBar()->value());
     lineRect.moveLeft(0 - editor->horizontalScrollBar()->value());
 
-    QRect margin = lineRect;
-    margin.setWidth(editor->leftMarginWidth());
-
-    QFont marginFont = parentEditor()->font();
-    marginFont.setPointSizeF(parentEditor()->font().pointSizeF() * 0.8);
-
-    painter->setFont(marginFont);
-
-    QRect marginTextRect;
-
-    QString marginText = QString::number(line + 1);
-    marginTextRect.setWidth(QFontMetrics(marginFont).horizontalAdvance(marginText));
-    marginTextRect.setHeight(QFontMetrics(marginFont).height());
-    marginTextRect.moveCenter(margin.center());
-    marginTextRect.moveRight(margin.right() - SC_DPI_W(3, editor));
-    painter->drawText(marginTextRect, Qt::AlignCenter, marginText);
-
     painter->setFont(editor->font());
     QRect lineTextRect;
     QString lineText = editor->d->lines.at(line)->contents;
     lineTextRect.setWidth(editor->fontMetrics().horizontalAdvance(lineText));
     lineTextRect.setHeight(editor->fontMetrics().height());
     lineTextRect.moveCenter(lineRect.center());
-    lineTextRect.moveLeft(margin.right() + SC_DPI_W(3, editor));
+    lineTextRect.moveLeft(outputBounds.left() - editor->horizontalScrollBar()->value());
+
+    painter->setClipRect(outputBounds);
+    painter->setClipping(true);
     painter->drawText(lineTextRect, Qt::AlignVCenter | Qt::AlignLeft, lineText);
+    painter->restore();
 }
 
 uint LineTextRenderStep::priority() const {
@@ -59,7 +48,7 @@ void LineTextRenderStep::paint(QPainter* painter, QRect outputBounds, QRect redr
     int lastLine = editor->lineAtY(redrawBounds.bottom());
     if (lastLine == -1) lastLine = editor->lastLineOnScreen();
     for (int i = firstLine; i <= lastLine; i++) {
-        drawLine(i, painter);
+        drawLine(i, outputBounds, painter);
     }
 }
 

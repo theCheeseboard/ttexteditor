@@ -3,6 +3,7 @@
 #include "textcaret.h"
 #include "texteditor.h"
 #include "texteditor_p.h"
+#include <QPainter>
 #include <QRect>
 
 CaretRenderStep::CaretRenderStep(TextEditor* parent) :
@@ -14,9 +15,13 @@ uint CaretRenderStep::priority() const {
 }
 
 void CaretRenderStep::paint(QPainter* painter, QRect outputBounds, QRect redrawBounds) {
+    painter->save();
+    painter->setClipRect(outputBounds);
+    painter->setClipping(true);
     for (TextCaret* caret : parentEditor()->d->carets) {
         caret->drawCaret(painter);
     }
+    painter->restore();
 }
 
 TextEditorRenderStep::RenderSide CaretRenderStep::renderSide() const {

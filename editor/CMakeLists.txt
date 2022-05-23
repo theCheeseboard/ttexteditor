@@ -17,6 +17,10 @@ set(SOURCES
     rendering/compilerissuerenderstep.cpp
     rendering/caretrenderstep.cpp
     rendering/linetextrenderstep.cpp
+    rendering/leftguttertextrenderstep.cpp
+    rendering/compilerissuebackgroundrenderstep.cpp
+    rendering/activelinebackgroundrenderstep.cpp
+    rendering/texteditorperlinerenderstep.cpp
 )
 
 set(HEADERS
@@ -34,6 +38,10 @@ set(PRIVATE_HEADERS
     rendering/compilerissuerenderstep.h
     rendering/caretrenderstep.h
     rendering/linetextrenderstep.h
+    rendering/leftguttertextrenderstep.h
+    rendering/compilerissuebackgroundrenderstep.h
+    rendering/activelinebackgroundrenderstep.h
+    rendering/texteditorperlinerenderstep.h
 )
 
 add_library(ttexteditor SHARED ${SOURCES} ${HEADERS} ${PRIVATE_HEADERS})

@@ -14,9 +14,11 @@ class TextEditorRenderStep : public QObject {
         ~TextEditorRenderStep();
 
         enum KnownRenderPriority : uint {
-            EditorBackground,
-            LineText,
-            Carets
+            EditorBackground = 0,
+            LineActiveHighlight = 100,
+            LeftGutterText = 200,
+            LineText = 300,
+            Carets = 400
         };
 
         TextEditor* parentEditor() const;

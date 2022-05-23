@@ -12,8 +12,11 @@
 #include "commands/careterasecommand.h"
 #include "commands/carettextcommand.h"
 
+#include "rendering/activelinebackgroundrenderstep.h"
 #include "rendering/caretrenderstep.h"
+#include "rendering/compilerissuebackgroundrenderstep.h"
 #include "rendering/compilerissuerenderstep.h"
+#include "rendering/leftguttertextrenderstep.h"
 #include "rendering/linetextrenderstep.h"
 
 #include "texteditor_p.h"
@@ -52,9 +55,12 @@ TextEditor::TextEditor(QWidget* parent) :
 
     d->colorScheme = new TextEditorColorScheme(this);
 
+    this->pushRenderStep(new LeftGutterTextRenderStep(this));
     this->pushRenderStep(new LineTextRenderStep(this));
     this->pushRenderStep(new CaretRenderStep(this));
     this->pushRenderStep(new CompilerIssueRenderStep(this));
+    this->pushRenderStep(new CompilerIssueBackgroundRenderStep(this));
+    this->pushRenderStep(new ActiveLineBackgroundRenderStep(this));
 
     this->repositionElements();
     this->setLineProperty(3, CompilationError, "Unknown type name 'Line'");
@@ -160,12 +166,6 @@ void TextEditor::repositionElements() {
     d->vScrollBar->setMaximum(qMax(0, fullHeight - this->height()));
 }
 
-int TextEditor::leftMarginWidth() {
-    QString testString;
-    testString.fill('0', QString::number(d->lines.length()).length());
-    return SC_DPI_W(20, this) + this->fontMetrics().horizontalAdvance(testString);
-}
-
 int TextEditor::lineTop(int line) {
     if (d->lineTops.length() > line) return d->lineTops.value(line);
 
@@ -245,10 +245,14 @@ void TextEditor::setChangesSaved() {
     d->undoStack->setClean();
 }
 
+QRect TextEditor::renderStepOutputArea(QString stepName) {
+    return renderStepOutputAreas().value(stepName);
+}
+
 QRect TextEditor::characterRect(QPoint linePos) {
     QString contents = d->lines.at(linePos.y())->contents;
 
-    int xOffset = this->leftMarginWidth() - d->hScrollBar->value();
+    int xOffset = renderStepOutputArea("LineText").left() - d->hScrollBar->value();
 
     QRect r;
     r.setTop(lineTop(linePos.y()) - d->vScrollBar->value());
@@ -354,7 +358,7 @@ void TextEditor::simplifyCarets() {
 }
 
 QPoint TextEditor::hitTest(QPoint pos) {
-    int translatedMouseX = pos.x() - leftMarginWidth() + d->hScrollBar->value();
+    int translatedMouseX = pos.x() - renderStepOutputArea("LineText").left() + d->hScrollBar->value();
     int translatedMouseY = pos.y() + d->vScrollBar->value();
 
     int selectedLine = this->lastLineOnScreen();
@@ -405,22 +409,12 @@ QPoint TextEditor::charToLinePos(int c) {
     return QPoint(d->lines.last()->contents.length() + 1, d->lines.length() - 1);
 }
 
-void TextEditor::paintEvent(QPaintEvent* event) {
-    QPainter painter(this);
-    painter.fillRect(QRect(0, 0, this->width(), this->height()), this->colorScheme()->item(TextEditorColorScheme::Background));
-
-    QRect margin;
-    margin.setTop(0);
-    margin.setLeft(-d->hScrollBar->value());
-    margin.setHeight(this->height());
-    margin.setWidth(this->leftMarginWidth());
-    painter.fillRect(margin, this->colorScheme()->item(TextEditorColorScheme::Margin));
-
+QMap<QString, QRect> TextEditor::renderStepOutputAreas() {
     QRect baseRect;
     baseRect.setTop(0);
     baseRect.setHeight(this->height());
 
-    QHash<QString, QRect> stepRenderRects;
+    QMap<QString, QRect> stepRenderRects;
     int currentLeftMargin = 0;
     int currentRightMargin = this->width();
     for (TextEditorRenderStep* step : d->additionalRenderSteps) {
@@ -440,19 +434,27 @@ void TextEditor::paintEvent(QPaintEvent* event) {
     }
 
     for (TextEditorRenderStep* step : d->additionalRenderSteps) {
-        QRect renderRect;
-        if (stepRenderRects.contains(step->stepName())) {
-            renderRect = stepRenderRects.value(step->stepName());
-        } else {
+        if (!stepRenderRects.contains(step->stepName())) {
             if (step->renderSide() == TextEditorRenderStep::Center) {
-                renderRect = baseRect;
+                QRect renderRect = baseRect;
                 renderRect.setLeft(currentLeftMargin);
                 renderRect.setRight(currentRightMargin);
+                stepRenderRects.insert(step->stepName(), renderRect);
             } else {
-                renderRect = stepRenderRects.value(step->renderStack());
+                stepRenderRects.insert(step->stepName(), stepRenderRects.value(step->renderStack()));
             }
         }
-        step->paint(&painter, renderRect, event->rect());
+    }
+    return stepRenderRects;
+}
+
+void TextEditor::paintEvent(QPaintEvent* event) {
+    QPainter painter(this);
+    painter.fillRect(QRect(0, 0, this->width(), this->height()), this->colorScheme()->item(TextEditorColorScheme::Background));
+
+    QMap<QString, QRect> stepRenderRects = renderStepOutputAreas();
+    for (TextEditorRenderStep* step : d->additionalRenderSteps) {
+        step->paint(&painter, stepRenderRects.value(step->stepName()), event->rect());
     }
 }
 
@@ -502,11 +504,11 @@ void TextEditor::mouseMoveEvent(QMouseEvent* event) {
     for (auto step = d->additionalRenderSteps.rbegin(); step != d->additionalRenderSteps.rend(); step++) {
         if ((*step)->mouseMoveEvent(event)) return;
     }
-    if (event->pos().x() + d->hScrollBar->value() < leftMarginWidth()) {
-        this->setCursor(QCursor(Qt::ArrowCursor));
-    } else {
-        this->setCursor(QCursor(Qt::IBeamCursor));
-    }
+    //    if (event->pos().x() + d->hScrollBar->value() < leftMarginWidth()) {
+    //        this->setCursor(QCursor(Qt::ArrowCursor));
+    //    } else {
+    this->setCursor(QCursor(Qt::IBeamCursor));
+    //    }
 }
 
 void TextEditor::keyPressEvent(QKeyEvent* event) {

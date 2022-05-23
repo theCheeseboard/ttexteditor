@@ -11,7 +11,7 @@ class LineTextRenderStep : public TextEditorRenderStep {
     signals:
 
     private:
-        void drawLine(int line, QPainter* painter);
+        void drawLine(int line, QRect outputBounds, QPainter* painter);
 
         // TextEditorRenderStep interface
     public:
