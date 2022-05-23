@@ -15,6 +15,7 @@ class CaretTextCommand;
 class CaretEraseCommand;
 class LeftGutterTextRenderStep;
 class ActiveLineBackgroundRenderStep;
+class QMenu;
 struct TextEditorPrivate;
 class TextEditor : public QWidget {
         Q_OBJECT
@@ -59,6 +60,17 @@ class TextEditor : public QWidget {
         void setChangesSaved();
 
         QRect renderStepOutputArea(QString stepName);
+
+        QMenu* standardContextMenu();
+
+        QString lineEndingString();
+
+        QString selectedText();
+        QStringList selectedCarets();
+
+        void copy();
+        void cut();
+        void paste();
 
     signals:
         void knownLinePropertyChanged(int line, TextEditor::KnownLineProperty property);
@@ -110,6 +122,10 @@ class TextEditor : public QWidget {
     protected:
         void keyPressEvent(QKeyEvent* event);
         void keyReleaseEvent(QKeyEvent* event);
+
+        // QWidget interface
+    protected:
+        void contextMenuEvent(QContextMenuEvent* event);
 };
 
 #endif // TEXTEDITOR_H

@@ -2,7 +2,9 @@
 
 #include "textcaret.h"
 #include "texteditorcolorscheme.h"
+#include <QClipboard>
 #include <QFontDatabase>
+#include <QMenu>
 #include <QPainter>
 #include <QRandomGenerator64>
 #include <QScrollBar>
@@ -100,7 +102,7 @@ void TextEditor::setLinePropertyMulti(int line, QString property, QVariant value
 }
 
 void TextEditor::clearLineProperties(QString property) {
-    for (auto line : d->lines) {
+    for (auto *line : d->lines) {
         line->properties.remove(property);
     }
 }
@@ -222,10 +224,12 @@ void TextEditor::setText(QString text) {
     d->lines.clear();
 
     for (const auto& line : text.split("\n")) {
-        auto l = new TextEditorPrivate::Line;
+        auto *l = new TextEditorPrivate::Line;
         l->contents = line;
         d->lines.append(l);
     }
+
+    this->repositionElements();
 }
 
 void TextEditor::setCurrentFile(QUrl currentFile) {
@@ -247,6 +251,49 @@ void TextEditor::setChangesSaved() {
 
 QRect TextEditor::renderStepOutputArea(QString stepName) {
     return renderStepOutputAreas().value(stepName);
+}
+
+QMenu* TextEditor::standardContextMenu() {
+    auto* menu = new QMenu();
+    menu->addAction(QIcon::fromTheme("edit-copy"), tr("Copy"), this, &TextEditor::copy);
+    menu->addAction(QIcon::fromTheme("edit-cut"), tr("Cut"), this, &TextEditor::cut);
+    menu->addAction(QIcon::fromTheme("edit-paste"), tr("Paste"), this, &TextEditor::paste);
+
+    return menu;
+}
+
+QString TextEditor::lineEndingString() {
+    // TODO: Configurable line endings
+    return "\n";
+}
+
+QString TextEditor::selectedText() {
+    return selectedCarets().join("\n");
+}
+
+QStringList TextEditor::selectedCarets() {
+    QStringList selected;
+    for (auto* caret : d->carets) {
+        selected.append(caret->textBetweenAnchors());
+    }
+    return selected;
+}
+
+void TextEditor::copy() {
+    if (this->selectedText().isEmpty()) return;
+
+    QApplication::clipboard()->setText(this->selectedText());
+}
+
+void TextEditor::cut() {
+    if (this->selectedText().isEmpty()) return;
+
+    QApplication::clipboard()->setText(this->selectedText());
+    d->undoStack->push(new CaretEraseCommand(this, true));
+}
+
+void TextEditor::paste() {
+    d->undoStack->push(new CaretTextCommand(this, QApplication::clipboard()->text()));
 }
 
 QRect TextEditor::characterRect(QPoint linePos) {
@@ -468,47 +515,54 @@ void TextEditor::wheelEvent(QWheelEvent* event) {
 }
 
 void TextEditor::mousePressEvent(QMouseEvent* event) {
-    event->accept();
+    if (event->button() == Qt::LeftButton) {
+        event->accept();
 
-    // Set the caret
-    if (event->modifiers() == (Qt::ControlModifier | Qt::AltModifier)) {
-        addCaret(hitTest(event->pos()));
-    } else {
-        for (TextCaret* caret : d->carets) {
-            if (caret->isPrimary()) {
-                if (event->modifiers() == Qt::ShiftModifier) {
-                    caret->setAnchor(hitTest(event->pos()));
+        // Set the caret
+        if (event->modifiers() == (Qt::ControlModifier | Qt::AltModifier)) {
+            addCaret(hitTest(event->pos()));
+        } else {
+            for (TextCaret* caret : d->carets) {
+                if (caret->isPrimary()) {
+                    if (event->modifiers() == Qt::ShiftModifier) {
+                        caret->setAnchor(hitTest(event->pos()));
+                    } else {
+                        caret->moveCaret(hitTest(event->pos()));
+                    }
+                    d->draggingCaret = caret;
                 } else {
-                    caret->moveCaret(hitTest(event->pos()));
+                    caret->discontinueAndDelete();
                 }
-                d->draggingCaret = caret;
-            } else {
-                caret->discontinueAndDelete();
             }
         }
     }
 }
 
 void TextEditor::mouseReleaseEvent(QMouseEvent* event) {
-    event->accept();
-    d->draggingCaret = nullptr;
+    if (event->button() == Qt::LeftButton) {
+        event->accept();
+        d->draggingCaret = nullptr;
+    }
 }
 
 void TextEditor::mouseMoveEvent(QMouseEvent* event) {
-    if (d->draggingCaret) {
-        d->draggingCaret->setAnchor(hitTest(event->pos()));
-        this->update();
-        return;
-    }
-
     for (auto step = d->additionalRenderSteps.rbegin(); step != d->additionalRenderSteps.rend(); step++) {
         if ((*step)->mouseMoveEvent(event)) return;
     }
+
     //    if (event->pos().x() + d->hScrollBar->value() < leftMarginWidth()) {
     //        this->setCursor(QCursor(Qt::ArrowCursor));
     //    } else {
     this->setCursor(QCursor(Qt::IBeamCursor));
     //    }
+
+    if (event->buttons() & Qt::LeftButton) {
+        if (d->draggingCaret) {
+            d->draggingCaret->setAnchor(hitTest(event->pos()));
+            this->update();
+            return;
+        }
+    }
 }
 
 void TextEditor::keyPressEvent(QKeyEvent* event) {
@@ -628,12 +682,13 @@ void TextEditorPrivate::loadCarets(SavedCarets carets) {
 
     for (TextCaret* oldCaret : this->carets) {
         oldCaret->discontinueAndDelete();
-
-        // We need to add the caret to the new caret list becase
-        // when the caret is destroyed, it tries to remove itself
-        // from the list of carets
-        //        cs.append(oldCaret);
     }
 
     this->carets = cs;
+}
+
+void TextEditor::contextMenuEvent(QContextMenuEvent* event) {
+    QMenu* menu = this->standardContextMenu();
+    connect(menu, &QMenu::aboutToHide, menu, &QMenu::deleteLater);
+    menu->popup(event->globalPos());
 }

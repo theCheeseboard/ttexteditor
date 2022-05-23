@@ -156,6 +156,20 @@ QPoint TextCaret::lastAnchor() {
     }
 }
 
+QString TextCaret::textBetweenAnchors() {
+    QString str;
+    for (int c = d->editor->linePosToChar(this->firstAnchor()); c < d->editor->linePosToChar(this->lastAnchor()); c++) {
+        auto linePos = d->editor->charToLinePos(c);
+        auto contents = d->editor->d->lines.at(linePos.y())->contents;
+        if (linePos.x() == contents.length()) {
+            str += d->editor->lineEndingString();
+        } else {
+            str += contents.at(linePos.x());
+        }
+    }
+    return str;
+}
+
 void TextCaret::drawCaret(QPainter* painter) {
     painter->save();
     QRect rect = d->anim->currentValue().toRect();

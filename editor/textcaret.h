@@ -35,6 +35,7 @@ class TextCaret : public QObject {
 
         QPoint firstAnchor();
         QPoint lastAnchor();
+        QString textBetweenAnchors();
 
         void drawCaret(QPainter* painter);
 
