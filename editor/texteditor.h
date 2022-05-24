@@ -63,6 +63,14 @@ class TextEditor : public QWidget {
 
         QMenu* standardContextMenu();
 
+        enum LineEndingType {
+            UnixLineEndings,
+            WinLineEndings,
+            ClassicMacLineEndings
+        };
+
+        void setLineEndingType(LineEndingType lineEndingType);
+        LineEndingType currentLineEndingType();
         QString lineEndingString();
 
         QString selectedText();
@@ -77,6 +85,7 @@ class TextEditor : public QWidget {
         void linePropertyChanged(int line, QString property);
         void currentFileChanged(QUrl currentFile);
         void unsavedChangesChanged();
+        void lineEndingTypeChanged();
 
     protected:
         friend TextCaret;

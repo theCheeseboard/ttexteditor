@@ -262,8 +262,24 @@ QMenu* TextEditor::standardContextMenu() {
     return menu;
 }
 
+void TextEditor::setLineEndingType(LineEndingType lineEndingType) {
+    d->lineEndingType = lineEndingType;
+    emit lineEndingTypeChanged();
+}
+
+TextEditor::LineEndingType TextEditor::currentLineEndingType() {
+    return d->lineEndingType;
+}
+
 QString TextEditor::lineEndingString() {
-    // TODO: Configurable line endings
+    switch (d->lineEndingType) {
+        case TextEditor::UnixLineEndings:
+            return "\n";
+        case TextEditor::WinLineEndings:
+            return "\r\n";
+        case TextEditor::ClassicMacLineEndings:
+            return "\r";
+    }
     return "\n";
 }
 
@@ -468,13 +484,13 @@ QMap<QString, QRect> TextEditor::renderStepOutputAreas() {
     int currentRightMargin = this->width();
     for (TextEditorRenderStep* step : d->additionalRenderSteps) {
         if (step->renderSide() == TextEditorRenderStep::Left) {
-            QRect r;
+            QRect r = baseRect;
             r.setWidth(step->renderWidth());
             r.moveLeft(currentLeftMargin);
             stepRenderRects.insert(step->stepName(), r);
             currentLeftMargin = r.right();
         } else if (step->renderSide() == TextEditorRenderStep::Right) {
-            QRect r;
+            QRect r = baseRect;
             r.setWidth(step->renderWidth());
             r.moveRight(currentRightMargin);
             stepRenderRects.insert(step->stepName(), r);

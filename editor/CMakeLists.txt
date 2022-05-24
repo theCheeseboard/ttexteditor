@@ -8,6 +8,7 @@ find_package(libcontemporary REQUIRED)
 set(SOURCES
     texteditor.cpp
     textcaret.cpp
+    completetexteditor.cpp completetexteditor.ui
     texteditorcolorscheme.cpp
     commands/carettextcommand.cpp
     commands/careterasecommand.cpp
@@ -21,10 +22,12 @@ set(SOURCES
     rendering/compilerissuebackgroundrenderstep.cpp
     rendering/activelinebackgroundrenderstep.cpp
     rendering/texteditorperlinerenderstep.cpp
+    statusbar/statusbarbutton.cpp
 )
 
 set(HEADERS
     texteditor.h
+    completetexteditor.h
     texteditorcolorscheme.h
     rendering/texteditorrenderstep.h
 )
@@ -42,6 +45,7 @@ set(PRIVATE_HEADERS
     rendering/compilerissuebackgroundrenderstep.h
     rendering/activelinebackgroundrenderstep.h
     rendering/texteditorperlinerenderstep.h
+    statusbar/statusbarbutton.h
 )
 
 add_library(ttexteditor SHARED ${SOURCES} ${HEADERS} ${PRIVATE_HEADERS})

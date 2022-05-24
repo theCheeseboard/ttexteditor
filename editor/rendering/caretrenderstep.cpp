@@ -16,8 +16,8 @@ uint CaretRenderStep::priority() const {
 
 void CaretRenderStep::paint(QPainter* painter, QRect outputBounds, QRect redrawBounds) {
     painter->save();
-    painter->setClipRect(outputBounds);
-    painter->setClipping(true);
+    //    painter->setClipRect(outputBounds);
+    //    painter->setClipping(true);
     for (TextCaret* caret : parentEditor()->d->carets) {
         caret->drawCaret(painter);
     }

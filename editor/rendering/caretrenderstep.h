@@ -10,6 +10,7 @@ class CaretRenderStep : public TextEditorRenderStep {
 
     signals:
 
+    private:
         // TextEditorRenderStep interface
     public:
         uint priority() const;

@@ -28,6 +28,10 @@ class CompilerIssueRenderStep : public TextEditorPerLineRenderStep {
         // TextEditorPerLineRenderStep interface
     public:
         void paintLine(int line, QPainter* painter, QRect outputBounds, QRect redrawBounds);
+
+        // TextEditorRenderStep interface
+public:
+        void paint(QPainter *painter, QRect outputBounds, QRect redrawBounds);
 };
 
 #endif // COMPILERISSUERENDERSTEP_H

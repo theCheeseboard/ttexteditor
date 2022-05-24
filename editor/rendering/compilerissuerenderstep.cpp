@@ -1,6 +1,7 @@
 #include "compilerissuerenderstep.h"
 
 #include "../texteditor.h"
+#include "../texteditorcolorscheme.h"
 #include <QMouseEvent>
 #include <QPainter>
 #include <QScrollBar>
@@ -54,6 +55,17 @@ void CompilerIssueRenderStep::updateExpandedWidth() {
 
 int CompilerIssueRenderStep::errorColWidth() const {
     TextEditor* parent = this->parentEditor();
+
+    bool haveErrors = false;
+    for (int i = 0; i < parent->numLines(); i++) {
+        if (!parent->lineProperties(i, TextEditor::CompilationError).isEmpty() || !parent->lineProperties(i, TextEditor::CompilationWarning).isEmpty()) {
+            haveErrors = true;
+            break;
+        }
+    }
+
+    if (!haveErrors) return 0;
+
     int lowWidth = SC_DPI_W(24, parent) + parent->verticalScrollBar()->width();
     int highWidth = d->expandedWidth;
     int range = highWidth - lowWidth;
@@ -95,7 +107,7 @@ QString CompilerIssueRenderStep::stepName() const {
 }
 
 void CompilerIssueRenderStep::paintLine(int line, QPainter* painter, QRect outputBounds, QRect redrawBounds) {
-    auto parent = parentEditor();
+    auto* parent = parentEditor();
 
     QVariantList compilationErrors = parent->lineProperties(line, TextEditor::CompilationError);
     QVariantList compilationWarnings = parent->lineProperties(line, TextEditor::CompilationWarning);
@@ -125,4 +137,23 @@ void CompilerIssueRenderStep::paintLine(int line, QPainter* painter, QRect outpu
     } else if (!compilationWarnings.isEmpty()) {
         drawLineAnnotation(QColor(200, 100, 0), compilationWarnings.first().toString());
     }
+}
+
+void CompilerIssueRenderStep::paint(QPainter* painter, QRect outputBounds, QRect redrawBounds) {
+    painter->save();
+
+    QColor backgroundColor = parentEditor()->colorScheme()->item(TextEditorColorScheme::Background).color();
+    backgroundColor.setAlpha(200 * d->expandingAnimation->currentValue().toReal());
+    painter->fillRect(outputBounds, backgroundColor);
+
+    painter->restore();
+    TextEditorPerLineRenderStep::paint(painter, outputBounds, redrawBounds);
+    painter->save();
+
+    QColor lineColor = parentEditor()->colorScheme()->item(TextEditorColorScheme::NormalText).color();
+    lineColor.setAlpha(255 * d->expandingAnimation->currentValue().toReal());
+    painter->setPen(lineColor);
+    painter->drawLine(outputBounds.topLeft(), outputBounds.bottomLeft());
+
+    painter->restore();
 }

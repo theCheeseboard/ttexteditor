@@ -35,6 +35,12 @@ struct TextEditorPrivate {
 
         QUrl currentFile;
 
+#ifdef Q_OS_WIN
+        TextEditor::LineEndingType lineEndingType = TextEditor::WinLineEndings;
+#else
+        TextEditor::LineEndingType lineEndingType = TextEditor::UnixLineEndings;
+#endif
+
         static QMap<TextEditor::KnownLineProperty, QString> lineProperties;
         static QList<TextEditor::KnownLineProperty> multiLineProperties;
 };
