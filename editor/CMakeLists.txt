@@ -30,6 +30,7 @@ set(HEADERS
     completetexteditor.h
     texteditorcolorscheme.h
     rendering/texteditorrenderstep.h
+    rendering/texteditorperlinerenderstep.h
 )
 
 set(PRIVATE_HEADERS
@@ -40,11 +41,10 @@ set(PRIVATE_HEADERS
     commands/texteditorcommand.h
     rendering/compilerissuerenderstep.h
     rendering/caretrenderstep.h
-    rendering/linetextrenderstep.h
     rendering/leftguttertextrenderstep.h
     rendering/compilerissuebackgroundrenderstep.h
     rendering/activelinebackgroundrenderstep.h
-    rendering/texteditorperlinerenderstep.h
+    rendering/linetextrenderstep.h
     statusbar/statusbarbutton.h
 )
 
@@ -54,21 +54,20 @@ set_target_properties(ttexteditor PROPERTIES
         OUTPUT_NAME ttexteditor
         FRAMEWORK TRUE
         MACOSX_FRAMEWORK_IDENTIFIER com.vicr123.theslate
-        VERSION 1.0.0
-        PUBLIC_HEADER "${HEADERS}")
+        VERSION 1.0.0)
 
 target_link_libraries(ttexteditor Qt6::Widgets libcontemporary)
 target_compile_definitions(ttexteditor PRIVATE TTEXTEDITOR_LIBRARY)
+cntp_target_public_headers(ttexteditor DESTINATION_DIRECTORY ttexteditor
+    HEADERS ${HEADERS})
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(CMAKECONFIG_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/ttexteditor.framework/Resources/CMake)
     set(HEADER_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
-    set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/ttexteditor.framework/Headers)
     set(LIBRARY_INSTALL_DIR ../)
 ELSE()
     set(CMAKECONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/ttexteditor)
     set(HEADER_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/ttexteditor)
-    set(INCLUDE_INSTALL_DIR ${HEADER_INSTALL_DIR})
     set(LIBRARY_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
 ENDIF()
 
@@ -84,7 +83,6 @@ install(EXPORT ttexteditorTargets
 
 install(TARGETS ttexteditor
         EXPORT ttexteditorTargets
-        PUBLIC_HEADER DESTINATION ${HEADER_INSTALL_DIR}
-        INCLUDES DESTINATION ${INCLUDE_INSTALL_DIR}
+        INCLUDES DESTINATION ${ttexteditor_INCLUDE_DIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR})
