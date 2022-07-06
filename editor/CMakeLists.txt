@@ -49,7 +49,7 @@ set(PRIVATE_HEADERS
 )
 
 add_library(ttexteditor SHARED ${SOURCES} ${HEADERS} ${PRIVATE_HEADERS})
-cntp_init(ttexteditor 17)
+cntp_init(ttexteditor 20)
 set_target_properties(ttexteditor PROPERTIES
         OUTPUT_NAME ttexteditor
         FRAMEWORK TRUE

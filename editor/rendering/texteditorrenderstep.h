@@ -1,13 +1,14 @@
 #ifndef TEXTEDITORRENDERSTEP_H
 #define TEXTEDITORRENDERSTEP_H
 
+#include "ttexteditor_global.h"
 #include <QObject>
 
 class QPainter;
 class TextEditor;
 class QMouseEvent;
 struct TextEditorRenderStepPrivate;
-class TextEditorRenderStep : public QObject {
+class TTEXTEDITOR_EXPORT TextEditorRenderStep : public QObject {
         Q_OBJECT
     public:
         explicit TextEditorRenderStep(TextEditor* parent = nullptr);

@@ -1,9 +1,10 @@
 #ifndef TEXTEDITORCOLORSCHEME_H
 #define TEXTEDITORCOLORSCHEME_H
 
+#include "ttexteditor_global.h"
 #include <QObject>
 
-class TextEditorColorScheme : public QObject {
+class TTEXTEDITOR_EXPORT TextEditorColorScheme : public QObject {
         Q_OBJECT
     public:
         explicit TextEditorColorScheme(QObject* parent = nullptr);

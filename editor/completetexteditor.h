@@ -1,6 +1,7 @@
 #ifndef COMPLETETEXTEDITOR_H
 #define COMPLETETEXTEDITOR_H
 
+#include "ttexteditor_global.h"
 #include <QUrl>
 #include <QWidget>
 
@@ -10,7 +11,7 @@ namespace Ui {
 
 class TextEditor;
 struct CompleteTextEditorPrivate;
-class CompleteTextEditor : public QWidget {
+class TTEXTEDITOR_EXPORT CompleteTextEditor : public QWidget {
         Q_OBJECT
 
     public:

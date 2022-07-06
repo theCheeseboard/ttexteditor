@@ -1,6 +1,7 @@
 #ifndef TEXTEDITOR_H
 #define TEXTEDITOR_H
 
+#include "ttexteditor_global.h"
 #include <QUrl>
 #include <QWidget>
 
@@ -17,7 +18,7 @@ class LeftGutterTextRenderStep;
 class ActiveLineBackgroundRenderStep;
 class QMenu;
 struct TextEditorPrivate;
-class TextEditor : public QWidget {
+class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         Q_OBJECT
     public:
         explicit TextEditor(QWidget* parent = nullptr);
