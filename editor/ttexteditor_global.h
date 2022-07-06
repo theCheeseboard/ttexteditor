@@ -1,0 +1,12 @@
+#ifndef TTEXTEDITOR_GLOBAL_H
+#define TTEXTEDITOR_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(TTEXTEDITOR_LIBRARY)
+#  define TTEXTEDITOR_EXPORT Q_DECL_EXPORT
+#else
+#  define TTEXTEDITOR_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // TTEXTEDITOR_GLOBAL_H
