@@ -200,7 +200,12 @@ bool TextCaret::isPrimary() {
     return d->isPrimary;
 }
 
-void TextCaret::insertText(QString text) {
+TextDelta TextCaret::insertText(QString text) {
+    TextDelta delta;
+    delta.replacement = text;
+    delta.startEdit = this->firstAnchor();
+    delta.endEdit = this->lastAnchor();
+
     // Mutate the text editor's text and update the carets
     TextEditorPrivate::Line* line = d->editor->d->lines.at(d->line);
 
@@ -236,11 +241,23 @@ void TextCaret::insertText(QString text) {
     }
 
     d->editor->d->lines.at(d->line)->contents.append(restOfLine);
+
+    return delta;
 }
 
-void TextCaret::backspace() {
+TextDelta TextCaret::backspace() {
     if (d->pos == 0) {
-        if (d->line == 0) return; // Can't backspace behind first line
+        if (d->line == 0) { // Can't backspace behind first line
+            TextDelta delta;
+            delta.startEdit = this->firstAnchor();
+            delta.endEdit = this->lastAnchor();
+            delta.replacement = "";
+            return delta;
+        }
+
+        TextDelta delta;
+        delta.replacement = "";
+        delta.endEdit = this->linePos();
 
         TextEditorPrivate::Line* lineToRemove = d->editor->d->lines.at(d->line);
         TextEditorPrivate::Line* lineToCombineTo = d->editor->d->lines.at(d->line - 1);
@@ -258,7 +275,14 @@ void TextCaret::backspace() {
 
         d->editor->d->lines.removeAll(lineToRemove);
         d->editor->repositionElements();
+
+        delta.startEdit = this->linePos();
+        return delta;
     } else {
+        TextDelta delta;
+        delta.replacement = "";
+        delta.endEdit = this->linePos();
+
         TextEditorPrivate::Line* line = d->editor->d->lines.at(d->line);
         line->contents.remove(d->pos - 1, 1);
 
@@ -267,6 +291,9 @@ void TextCaret::backspace() {
                 caret->moveCaret(caret->d->line, caret->d->pos - 1);
             }
         }
+
+        delta.startEdit = this->linePos();
+        return delta;
     }
 }
 

@@ -41,8 +41,8 @@ struct TextEditorPrivate {
         TextEditor::LineEndingType lineEndingType = TextEditor::UnixLineEndings;
 #endif
 
-        static QMap<TextEditor::KnownLineProperty, QString> lineProperties;
-        static QList<TextEditor::KnownLineProperty> multiLineProperties;
+        static const QMap<TextEditor::KnownLineProperty, QString> lineProperties;
+        static const QList<TextEditor::KnownLineProperty> multiLineProperties;
 };
 
 #endif // TEXTEDITOR_P_H

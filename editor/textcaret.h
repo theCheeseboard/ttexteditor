@@ -5,6 +5,7 @@
 
 struct TextCaretPrivate;
 class TextEditor;
+struct TextDelta;
 class QPainter;
 class TextCaret : public QObject {
         Q_OBJECT
@@ -42,8 +43,8 @@ class TextCaret : public QObject {
         void setIsPrimary(bool primary);
         bool isPrimary();
 
-        void insertText(QString text);
-        void backspace();
+        TextDelta insertText(QString text);
+        TextDelta backspace();
 
         QPoint linePos();
         QRect caretRect();

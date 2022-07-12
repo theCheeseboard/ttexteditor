@@ -1,10 +1,10 @@
 #include "texteditor_p.h"
 
-QMap<TextEditor::KnownLineProperty, QString> TextEditorPrivate::lineProperties = {
-    {TextEditor::CompilationWarning, "CompilationWarning"},
-    {TextEditor::CompilationError,   "CompilationError"  }
+const QMap<TextEditor::KnownLineProperty, QString> TextEditorPrivate::lineProperties = {
+    {TextEditor::CompilationWarning, QStringLiteral("CompilationWarning")},
+    {TextEditor::CompilationError,   QStringLiteral("CompilationError")  }
 };
 
-QList<TextEditor::KnownLineProperty> TextEditorPrivate::multiLineProperties = {
+const QList<TextEditor::KnownLineProperty> TextEditorPrivate::multiLineProperties = {
     TextEditor::CompilationWarning,
     TextEditor::CompilationError};

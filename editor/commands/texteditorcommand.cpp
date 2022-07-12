@@ -43,42 +43,45 @@ void TextEditorCommand::pushCaretSelectionEraseCommand(int caret) {
 }
 
 void TextEditorCommand::undo() {
+    QList<TextDelta> deltas;
     d->editor->d->loadCarets(d->lastCarets);
     for (auto command = d->commands.crbegin(); command != d->commands.crend(); command++) {
         TextCaret* caret = d->editor->d->carets.at(command->caret);
         if (command->isInsert) {
             for (int i = 0; i < command->text.length(); i++) {
                 if (command->insertAfter) caret->moveCaretRelative(0, 1);
-                caret->backspace();
+                deltas.append(caret->backspace());
             }
         } else {
-            caret->insertText(command->text);
+            deltas.append(caret->insertText(command->text));
             if (command->insertAfter) caret->moveCaretRelative(0, -command->text.length());
         }
     }
     d->editor->d->loadCarets(d->initialCarets);
 
-    emit d->editor->textChanged();
+    emit d->editor->textChanged(deltas);
 }
 
 void TextEditorCommand::redo() {
+    QList<TextDelta> deltas;
+
     d->editor->d->loadCarets(d->initialCarets);
     for (auto command = d->commands.cbegin(); command != d->commands.cend(); command++) {
         TextCaret* caret = d->editor->d->carets.at(command->caret);
         if (command->isInsert) {
-            caret->insertText(command->text);
+            deltas.append(caret->insertText(command->text));
             if (command->insertAfter) caret->moveCaretRelative(0, -command->text.length());
         } else {
             for (int i = 0; i < command->text.length(); i++) {
                 if (command->insertAfter) caret->moveCaretRelative(0, 1);
-                caret->backspace();
+                deltas.append(caret->backspace());
             }
         }
     }
 
     if (d->lastCarets.isEmpty()) d->lastCarets = d->editor->d->saveCarets();
 
-    emit d->editor->textChanged();
+    emit d->editor->textChanged(deltas);
 }
 
 bool TextEditorCommand::mergeWith(const QUndoCommand* other) {

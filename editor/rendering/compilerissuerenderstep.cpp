@@ -50,7 +50,7 @@ void CompilerIssueRenderStep::updateExpandedWidth() {
             longestWidth = qMax(longestWidth, metrics.horizontalAdvance(warning.toString()));
         }
     }
-    d->expandedWidth = longestWidth + SC_DPI_W(30, parent);
+    d->expandedWidth = qMin(longestWidth + SC_DPI_W(30, parent), parent->width() - 200);
 }
 
 int CompilerIssueRenderStep::errorColWidth() const {

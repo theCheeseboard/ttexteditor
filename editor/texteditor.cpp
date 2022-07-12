@@ -88,23 +88,31 @@ void TextEditor::setLineProperty(int line, KnownLineProperty property, QVariant 
         this->setLineProperty(line, TextEditorPrivate::lineProperties.value(property), value);
     }
     emit knownLinePropertyChanged(line, property);
+    this->update();
 }
 
 void TextEditor::setLineProperty(int line, QString property, QVariant value) {
     d->lines.at(line)->properties.remove(property);
     d->lines.at(line)->properties.insert(property, value);
     emit linePropertyChanged(line, property);
+    this->update();
 }
 
 void TextEditor::setLinePropertyMulti(int line, QString property, QVariant value) {
     d->lines.at(line)->properties.insert(property, value);
     emit linePropertyChanged(line, property);
+    this->update();
 }
 
 void TextEditor::clearLineProperties(QString property) {
     for (auto* line : d->lines) {
         line->properties.remove(property);
     }
+    this->update();
+}
+
+void TextEditor::clearLineProperties(KnownLineProperty property) {
+    this->clearLineProperties(TextEditorPrivate::lineProperties.value(property));
 }
 
 QVariantList TextEditor::lineProperties(int line, KnownLineProperty property) {
@@ -217,9 +225,6 @@ void TextEditor::setText(QString text) {
         }
     }
 
-    d->lineProperties.clear();
-    d->multiLineProperties.clear();
-
     qDeleteAll(d->lines);
     d->lines.clear();
 
@@ -230,6 +235,7 @@ void TextEditor::setText(QString text) {
     }
 
     this->repositionElements();
+    this->update();
 }
 
 void TextEditor::setCurrentFile(QUrl currentFile) {

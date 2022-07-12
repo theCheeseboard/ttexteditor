@@ -5,6 +5,12 @@
 #include <QUrl>
 #include <QWidget>
 
+struct TextDelta {
+        QPoint startEdit;
+        QPoint endEdit;
+        QString replacement;
+};
+
 class QScrollBar;
 class TextEditorColorScheme;
 class TextCaret;
@@ -36,6 +42,7 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         void setLineProperty(int line, QString property, QVariant value);
         void setLinePropertyMulti(int line, QString property, QVariant value);
         void clearLineProperties(QString property);
+        void clearLineProperties(KnownLineProperty property);
         QVariantList lineProperties(int line, KnownLineProperty property);
         QVariantList lineProperties(int line, QString property);
 
@@ -87,7 +94,7 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         void currentFileChanged(QUrl currentFile);
         void unsavedChangesChanged();
         void lineEndingTypeChanged();
-        void textChanged();
+        void textChanged(QList<TextDelta> deltas);
 
     protected:
         friend TextCaret;
