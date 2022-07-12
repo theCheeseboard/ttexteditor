@@ -26,6 +26,7 @@ set(SOURCES
 )
 
 set(HEADERS
+    ttexteditor_global.h
     texteditor.h
     completetexteditor.h
     texteditorcolorscheme.h
