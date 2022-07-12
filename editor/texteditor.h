@@ -87,6 +87,7 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         void currentFileChanged(QUrl currentFile);
         void unsavedChangesChanged();
         void lineEndingTypeChanged();
+        void textChanged();
 
     protected:
         friend TextCaret;

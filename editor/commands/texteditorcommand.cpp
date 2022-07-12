@@ -57,6 +57,8 @@ void TextEditorCommand::undo() {
         }
     }
     d->editor->d->loadCarets(d->initialCarets);
+
+    emit d->editor->textChanged();
 }
 
 void TextEditorCommand::redo() {
@@ -75,6 +77,8 @@ void TextEditorCommand::redo() {
     }
 
     if (d->lastCarets.isEmpty()) d->lastCarets = d->editor->d->saveCarets();
+
+    emit d->editor->textChanged();
 }
 
 bool TextEditorCommand::mergeWith(const QUndoCommand* other) {
