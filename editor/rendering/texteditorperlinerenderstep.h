@@ -2,8 +2,9 @@
 #define TEXTEDITORPERLINERENDERSTEP_H
 
 #include "texteditorrenderstep.h"
+#include "ttexteditor_global.h"
 
-class TextEditorPerLineRenderStep : public TextEditorRenderStep {
+class TTEXTEDITOR_EXPORT TextEditorPerLineRenderStep : public TextEditorRenderStep {
         Q_OBJECT
     public:
         explicit TextEditorPerLineRenderStep(TextEditor* parent = nullptr);
