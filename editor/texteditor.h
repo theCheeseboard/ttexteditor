@@ -88,6 +88,8 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         void cut();
         void paste();
 
+        QPoint hitTest(QPoint pos);
+
     signals:
         void knownLinePropertyChanged(int line, TextEditor::KnownLineProperty property);
         void linePropertyChanged(int line, QString property);
@@ -116,8 +118,6 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         void addCaret(int line, int pos);
         void addCaret(QPoint linePos);
         void simplifyCarets();
-
-        QPoint hitTest(QPoint pos);
 
         int linePosToChar(QPoint linePos);
         QPoint charToLinePos(int c);
