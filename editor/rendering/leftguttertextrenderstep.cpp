@@ -52,6 +52,6 @@ void LeftGutterTextRenderStep::paintLine(int line, QPainter* painter, QRect outp
     marginTextRect.setWidth(QFontMetrics(marginFont).horizontalAdvance(marginText));
     marginTextRect.setHeight(QFontMetrics(marginFont).height());
     marginTextRect.moveCenter(margin.center());
-    marginTextRect.moveRight(margin.right() - SC_DPI_W(6, editor));
+    marginTextRect.moveRight(margin.right() - SC_DPI_W(15, editor));
     painter->drawText(marginTextRect, Qt::AlignCenter, marginText);
 }

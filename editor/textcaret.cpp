@@ -110,7 +110,9 @@ void TextCaret::moveCaretRelative(int lines, int cols) {
     if (newLine < 0) newLine = 0;
     if (newLine >= d->editor->d->lines.length()) newLine = d->editor->d->lines.length() - 1;
 
-    moveCaret(d->editor->charToLinePos(d->editor->linePosToChar(QPoint(d->pos, newLine)) + cols));
+    auto newLinePos = QPoint(d->pos, newLine);
+    newLinePos.setX(qMin(newLinePos.x(), d->editor->d->lines.at(newLinePos.y())->contents.length()));
+    moveCaret(d->editor->charToLinePos(d->editor->linePosToChar(newLinePos) + cols));
 }
 
 void TextCaret::moveCaretToStartOfLine() {
