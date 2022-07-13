@@ -59,6 +59,7 @@ class TextCaret : public QObject {
         TextCaretPrivate* d;
 
         void moveCaret(QRect newPos);
+        void recalculateAnchor();
 
         // QObject interface
     public:

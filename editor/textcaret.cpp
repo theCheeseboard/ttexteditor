@@ -18,6 +18,8 @@ struct TextCaretPrivate {
         bool isPrimary = false;
         bool discontinued = false;
 
+        QPolygon anchorPoly;
+
         tVariantAnimation* anim;
 
         static tVariantAnimation* caretBlinkTimer;
@@ -56,6 +58,8 @@ TextCaret::TextCaret(int line, int pos, TextEditor* parent) :
     moveCaret(line, pos);
     d->anim->stop();
     d->anim->setStartValue(d->anim->endValue());
+
+    recalculateAnchor();
 }
 
 TextCaret::~TextCaret() {
@@ -83,6 +87,8 @@ void TextCaret::loadCaret(SavedCaret caret) {
     d->line = caret.line;
     d->pos = caret.pos;
     d->anchor = caret.anchor;
+
+    recalculateAnchor();
 }
 
 void TextCaret::moveCaret(int line, int pos) {
@@ -98,6 +104,8 @@ void TextCaret::moveCaret(int line, int pos) {
     caretRect.setHeight(d->editor->lineHeight(line));
     caretRect.setWidth(SC_DPI_W(1, d->editor));
     moveCaret(caretRect);
+
+    recalculateAnchor();
 }
 
 void TextCaret::moveCaret(QPoint linePos) {
@@ -126,6 +134,8 @@ void TextCaret::moveCaretToEndOfLine() {
 void TextCaret::setAnchor(int line, int pos) {
     int c = d->editor->linePosToChar(QPoint(d->pos, d->line));
     d->anchor = d->editor->linePosToChar(QPoint(pos, line)) - c;
+
+    recalculateAnchor();
 }
 
 void TextCaret::setAnchor(QPoint linePos) {
@@ -137,6 +147,8 @@ void TextCaret::moveAnchorRelative(int lines, int cols) {
     QPoint anchorPos = d->editor->charToLinePos(c + d->anchor);
     int newAnchorC = d->editor->linePosToChar(anchorPos + QPoint(cols, lines));
     d->anchor = newAnchorC - c;
+
+    recalculateAnchor();
 }
 
 QPoint TextCaret::firstAnchor() {
@@ -181,15 +193,10 @@ void TextCaret::drawCaret(QPainter* painter) {
     if (d->anchor != 0) {
         painter->save();
         // Draw the anchor
-        QPolygon anchorPoly;
-        int firstAnchor = d->editor->linePosToChar(this->firstAnchor());
-        int lastAnchor = d->editor->linePosToChar(this->lastAnchor());
-        for (int i = firstAnchor; i < lastAnchor; i++) {
-            anchorPoly = anchorPoly.united(d->editor->characterRect(d->editor->charToLinePos(i)));
-        }
+        auto offset = d->editor->characterRect(this->firstAnchor()).topLeft();
         painter->setBrush(d->editor->colorScheme()->item(TextEditorColorScheme::HighlightedText));
         painter->setPen(d->editor->colorScheme()->item(TextEditorColorScheme::HighlightedTextBorder).color());
-        painter->drawPolygon(anchorPoly);
+        painter->drawPolygon(d->anchorPoly.translated(offset));
         painter->restore();
     }
 }
@@ -330,6 +337,19 @@ void TextCaret::moveCaret(QRect newPos) {
     d->caretBlinkTimer->start();
 
     d->editor->simplifyCarets();
+}
+
+void TextCaret::recalculateAnchor()
+{
+    //TODO: Parallelism???
+    QPolygon anchorPoly;
+    int firstAnchor = d->editor->linePosToChar(this->firstAnchor());
+    int lastAnchor = d->editor->linePosToChar(this->lastAnchor());
+    auto offset = d->editor->characterRect(this->firstAnchor()).topLeft();
+    for (int i = firstAnchor; i < lastAnchor; i++) {
+        anchorPoly = anchorPoly.united(d->editor->characterRect(d->editor->charToLinePos(i)));
+    }
+    d->anchorPoly = anchorPoly.translated(-offset);
 }
 
 bool TextCaret::eventFilter(QObject* watched, QEvent* event) {
