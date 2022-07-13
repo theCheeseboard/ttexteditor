@@ -19,6 +19,7 @@ void CaretRenderStep::paint(QPainter* painter, QRect outputBounds, QRect redrawB
     //    painter->setClipRect(outputBounds);
     //    painter->setClipping(true);
     for (TextCaret* caret : parentEditor()->d->carets) {
+        if (parentEditor()->readOnly() && caret->firstAnchor() == caret->lastAnchor()) continue;
         caret->drawCaret(painter);
     }
     painter->restore();

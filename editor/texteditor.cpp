@@ -86,6 +86,15 @@ void TextEditor::redo() {
     d->undoStack->redo();
 }
 
+bool TextEditor::readOnly() {
+    return d->readOnly;
+}
+
+void TextEditor::setReadOnly(bool readOnly) {
+    d->readOnly = readOnly;
+    emit readOnlyChanged(readOnly);
+}
+
 void TextEditor::setLineProperty(int line, KnownLineProperty property, QVariant value) {
     if (TextEditorPrivate::multiLineProperties.contains(property)) {
         this->setLinePropertyMulti(line, TextEditorPrivate::lineProperties.value(property), value);
@@ -313,6 +322,7 @@ void TextEditor::copy() {
 }
 
 void TextEditor::cut() {
+    if (this->readOnly()) return;
     if (this->selectedText().isEmpty()) return;
 
     QApplication::clipboard()->setText(this->selectedText());
@@ -320,6 +330,7 @@ void TextEditor::cut() {
 }
 
 void TextEditor::paste() {
+    if (this->readOnly()) return;
     d->undoStack->push(new CaretTextCommand(this, QApplication::clipboard()->text()));
 }
 
@@ -600,6 +611,7 @@ void TextEditor::keyPressEvent(QKeyEvent* event) {
     Qt::KeyboardModifiers modifiers = event->modifiers() & ~Qt::KeypadModifier;
 
     if (modifiers == Qt::NoModifier || modifiers == Qt::ShiftModifier) {
+        if (d->readOnly) return;
         if (event->key() == Qt::Key_Backspace) {
             d->undoStack->push(new CaretEraseCommand(this, true));
         } else if (event->key() == Qt::Key_Delete) {

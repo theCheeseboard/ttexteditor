@@ -2,8 +2,8 @@
 #define TEXTEDITOR_H
 
 #include "ttexteditor_global.h"
-#include <QUrl>
 #include <QOpenGLWidget>
+#include <QUrl>
 
 struct TextDelta {
         QPoint startEdit;
@@ -32,6 +32,9 @@ class TTEXTEDITOR_EXPORT TextEditor : public QOpenGLWidget {
 
         void undo();
         void redo();
+
+        bool readOnly();
+        void setReadOnly(bool readOnly);
 
         enum KnownLineProperty {
             CompilationWarning,
@@ -97,6 +100,7 @@ class TTEXTEDITOR_EXPORT TextEditor : public QOpenGLWidget {
         void unsavedChangesChanged();
         void lineEndingTypeChanged();
         void textChanged(QList<TextDelta> deltas);
+        void readOnlyChanged(bool readOnly);
 
     protected:
         friend TextCaret;

@@ -29,6 +29,7 @@ uint ActiveLineBackgroundRenderStep::priority() const {
 
 void ActiveLineBackgroundRenderStep::paint(QPainter* painter, QRect outputBounds, QRect redrawBounds) {
     TextEditor* parent = parentEditor();
+    if (parent->readOnly()) return;
 
     painter->save();
 

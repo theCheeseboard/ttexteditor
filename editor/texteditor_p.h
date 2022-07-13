@@ -20,6 +20,8 @@ struct TextEditorPrivate {
         QScrollBar *vScrollBar, *hScrollBar;
         QList<int> lineTops;
 
+        bool readOnly = false;
+
         QList<TextCaret*> carets;
         TextCaret* draggingCaret = nullptr;
         QUndoStack* undoStack;
