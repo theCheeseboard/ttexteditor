@@ -24,10 +24,15 @@
 #include "texteditor_p.h"
 
 TextEditor::TextEditor(QWidget* parent) :
-    QWidget{parent} {
+    QOpenGLWidget{parent} {
     d = new TextEditorPrivate();
 
-    this->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    QSurfaceFormat surfaceFormat = QSurfaceFormat::defaultFormat();
+    surfaceFormat.setSamples(10);
+    this->setFormat(surfaceFormat);
+
+    auto font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    this->setFont(font);
     this->setMouseTracking(true);
     this->setFocusPolicy(Qt::StrongFocus);
 
@@ -521,6 +526,7 @@ QMap<QString, QRect> TextEditor::renderStepOutputAreas() {
 
 void TextEditor::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
+    painter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::TextAntialiasing);
     painter.fillRect(QRect(0, 0, this->width(), this->height()), this->colorScheme()->item(TextEditorColorScheme::Background));
 
     QMap<QString, QRect> stepRenderRects = renderStepOutputAreas();
@@ -530,6 +536,7 @@ void TextEditor::paintEvent(QPaintEvent* event) {
 }
 
 void TextEditor::resizeEvent(QResizeEvent* event) {
+    QOpenGLWidget::resizeEvent(event);
     this->repositionElements();
 }
 

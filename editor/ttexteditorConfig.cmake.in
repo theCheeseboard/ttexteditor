@@ -2,6 +2,8 @@ set(ttexteditor_VERSION 1.0.0)
 
 @PACKAGE_INIT@
 
+find_package(Qt6 REQUIRED OpenGLWidgets)
+
 include("${CMAKE_CURRENT_LIST_DIR}/ttexteditorTargets.cmake")
 
 check_required_components(ttexteditor)

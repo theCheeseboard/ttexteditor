@@ -123,6 +123,10 @@ void CompilerIssueRenderStep::paintLine(int line, QPainter* painter, QRect outpu
         painter->setClipRect(lineRect);
         painter->setClipping(true);
 
+        QFont font = qApp->font();
+        font.setPixelSize(lineRect.height() * 0.8);
+        painter->setFont(font);
+
         QRect textRect = lineRect;
         textRect.moveLeft(textRect.left() + SC_DPI_W(2, parent));
         textRect.setWidth(painter->fontMetrics().horizontalAdvance(str) + SC_DPI_W(2, parent));

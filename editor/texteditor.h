@@ -3,7 +3,7 @@
 
 #include "ttexteditor_global.h"
 #include <QUrl>
-#include <QWidget>
+#include <QOpenGLWidget>
 
 struct TextDelta {
         QPoint startEdit;
@@ -24,7 +24,7 @@ class LeftGutterTextRenderStep;
 class ActiveLineBackgroundRenderStep;
 class QMenu;
 struct TextEditorPrivate;
-class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
+class TTEXTEDITOR_EXPORT TextEditor : public QOpenGLWidget {
         Q_OBJECT
     public:
         explicit TextEditor(QWidget* parent = nullptr);
