@@ -21,6 +21,7 @@ class LineTextRenderStep;
 class CaretTextCommand;
 class CaretEraseCommand;
 class CaretTabCommand;
+class TextReplacementCommand;
 class LeftGutterTextRenderStep;
 class ActiveLineBackgroundRenderStep;
 class QMenu;
@@ -94,11 +95,18 @@ class TTEXTEDITOR_EXPORT TextEditor : public QOpenGLWidget {
         QString selectedText();
         QStringList selectedCarets();
 
+        int numberOfCarets();
+        QPoint caretAnchorStart(int caret);
+        QPoint caretAnchorEnd(int caret);
+
+        void replaceText(QPoint anchorStart, QPoint anchorEnd, QString replacement);
+
         void copy();
         void cut();
         void paste();
 
         QPoint hitTest(QPoint pos);
+        QRect characterRect(QPoint linePos);
 
     signals:
         void knownLinePropertyChanged(int line, TextEditor::KnownLineProperty property);
@@ -108,6 +116,7 @@ class TTEXTEDITOR_EXPORT TextEditor : public QOpenGLWidget {
         void lineEndingTypeChanged();
         void textChanged(QList<TextDelta> deltas);
         void readOnlyChanged(bool readOnly);
+        void keyTyped(QString keyText);
 
     protected:
         friend TextCaret;
@@ -119,12 +128,11 @@ class TTEXTEDITOR_EXPORT TextEditor : public QOpenGLWidget {
         friend LineTextRenderStep;
         friend LeftGutterTextRenderStep;
         friend ActiveLineBackgroundRenderStep;
+        friend TextReplacementCommand;
         TextEditorPrivate* d;
 
     private:
         void repositionElements();
-
-        QRect characterRect(QPoint linePos);
 
         void drawLine(int line, QPainter* painter);
         void addCaret(int line, int pos);

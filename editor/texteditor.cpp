@@ -1,6 +1,7 @@
 ﻿#include "texteditor.h"
 
 #include "commands/carettabcommand.h"
+#include "commands/textreplacementcommand.h"
 #include "textcaret.h"
 #include "texteditorcolorscheme.h"
 #include <QClipboard>
@@ -248,7 +249,7 @@ void TextEditor::setText(QString text) {
     d->undoStack->clear();
 
     // Clear all the carets
-    for (auto caret : d->carets) {
+    for (auto *caret : d->carets) {
         if (caret->isPrimary()) {
             caret->moveCaret(0, 0);
         } else {
@@ -330,6 +331,22 @@ QStringList TextEditor::selectedCarets() {
         selected.append(caret->textBetweenAnchors());
     }
     return selected;
+}
+
+int TextEditor::numberOfCarets() {
+    return d->carets.length();
+}
+
+QPoint TextEditor::caretAnchorStart(int caret) {
+    return d->carets.at(caret)->firstAnchor();
+}
+
+QPoint TextEditor::caretAnchorEnd(int caret) {
+    return d->carets.at(caret)->lastAnchor();
+}
+
+void TextEditor::replaceText(QPoint anchorStart, QPoint anchorEnd, QString replacement) {
+    d->undoStack->push(new TextReplacementCommand(this, anchorStart, anchorEnd, replacement));
 }
 
 void TextEditor::copy() {
@@ -635,12 +652,14 @@ void TextEditor::keyPressEvent(QKeyEvent* event) {
             d->undoStack->push(new CaretEraseCommand(this, false));
         } else if (event->key() == Qt::Key_Return) {
             d->undoStack->push(new CaretTextCommand(this, QStringLiteral("\n")));
+            emit keyTyped("\n");
         } else if (event->key() == Qt::Key_Tab) {
             d->undoStack->push(new CaretTabCommand(this));
         } else if (event->key() == Qt::Key_Backtab) {
             //            d->undoStack->push(new CaretTextCommand(this, QStringLiteral("backtab")));
         } else if (!event->text().isEmpty()) {
             d->undoStack->push(new CaretTextCommand(this, event->text()));
+            emit keyTyped(event->text());
         }
     }
 

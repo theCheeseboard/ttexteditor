@@ -13,6 +13,7 @@ set(SOURCES
     commands/carettextcommand.cpp
     commands/careterasecommand.cpp
     commands/texteditorcommand.cpp
+    commands/textreplacementcommand.cpp
     texteditorlineproperties.cpp
     rendering/texteditorrenderstep.cpp
     rendering/compilerissuerenderstep.cpp
@@ -42,6 +43,7 @@ set(PRIVATE_HEADERS
     commands/careterasecommand.h
     commands/texteditorcommand.h
     commands/carettabcommand.h
+    commands/textreplacementcommand.h
     rendering/compilerissuerenderstep.h
     rendering/caretrenderstep.h
     rendering/leftguttertextrenderstep.h
