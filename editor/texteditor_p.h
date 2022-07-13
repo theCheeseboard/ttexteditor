@@ -21,6 +21,8 @@ struct TextEditorPrivate {
         QList<int> lineTops;
 
         bool readOnly = false;
+        int tabLength = 4;
+        bool preferSpaces = true;
 
         QList<TextCaret*> carets;
         TextCaret* draggingCaret = nullptr;

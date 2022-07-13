@@ -18,6 +18,21 @@ CaretTextCommand::CaretTextCommand(TextEditor* editor, QString text) :
             text,
             true,
             false});
+
+        if (text == "\n") {
+            // Indent the next line
+            QString previousLine = editor->d->lines.at(caret->firstAnchor().y())->contents;
+            QString newLineText;
+            for (auto c : qAsConst(previousLine)) {
+                if (c != ' ' && c != '\t') break;
+                newLineText += c;
+            }
+
+            this->pushEditorCommand({i,
+                newLineText,
+                true,
+                false});
+        }
     }
 }
 

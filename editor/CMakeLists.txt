@@ -23,6 +23,7 @@ set(SOURCES
     rendering/activelinebackgroundrenderstep.cpp
     rendering/texteditorperlinerenderstep.cpp
     statusbar/statusbarbutton.cpp
+    commands/carettabcommand.cpp
 )
 
 set(HEADERS
@@ -40,6 +41,7 @@ set(PRIVATE_HEADERS
     commands/carettextcommand.h
     commands/careterasecommand.h
     commands/texteditorcommand.h
+    commands/carettabcommand.h
     rendering/compilerissuerenderstep.h
     rendering/caretrenderstep.h
     rendering/leftguttertextrenderstep.h

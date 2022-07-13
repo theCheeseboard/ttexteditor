@@ -1,5 +1,6 @@
 ﻿#include "texteditor.h"
 
+#include "commands/carettabcommand.h"
 #include "textcaret.h"
 #include "texteditorcolorscheme.h"
 #include <QClipboard>
@@ -93,6 +94,22 @@ bool TextEditor::readOnly() {
 void TextEditor::setReadOnly(bool readOnly) {
     d->readOnly = readOnly;
     emit readOnlyChanged(readOnly);
+}
+
+int TextEditor::tabLength() {
+    return d->tabLength;
+}
+
+void TextEditor::setTabLength(int tabLength) {
+    d->tabLength = tabLength;
+}
+
+bool TextEditor::preferSpaces() {
+    return d->preferSpaces;
+}
+
+void TextEditor::setPreferSpaces(bool preferSpaces) {
+    d->preferSpaces = preferSpaces;
 }
 
 void TextEditor::setLineProperty(int line, KnownLineProperty property, QVariant value) {
@@ -618,6 +635,10 @@ void TextEditor::keyPressEvent(QKeyEvent* event) {
             d->undoStack->push(new CaretEraseCommand(this, false));
         } else if (event->key() == Qt::Key_Return) {
             d->undoStack->push(new CaretTextCommand(this, QStringLiteral("\n")));
+        } else if (event->key() == Qt::Key_Tab) {
+            d->undoStack->push(new CaretTabCommand(this));
+        } else if (event->key() == Qt::Key_Backtab) {
+            //            d->undoStack->push(new CaretTextCommand(this, QStringLiteral("backtab")));
         } else if (!event->text().isEmpty()) {
             d->undoStack->push(new CaretTextCommand(this, event->text()));
         }
@@ -734,4 +755,8 @@ void TextEditor::contextMenuEvent(QContextMenuEvent* event) {
     QMenu* menu = this->standardContextMenu();
     connect(menu, &QMenu::aboutToHide, menu, &QMenu::deleteLater);
     menu->popup(event->globalPos());
+}
+
+bool TextEditor::focusNextPrevChild(bool next) {
+    return false;
 }

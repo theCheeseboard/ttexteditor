@@ -20,6 +20,7 @@ class TextEditorRenderStep;
 class LineTextRenderStep;
 class CaretTextCommand;
 class CaretEraseCommand;
+class CaretTabCommand;
 class LeftGutterTextRenderStep;
 class ActiveLineBackgroundRenderStep;
 class QMenu;
@@ -35,6 +36,12 @@ class TTEXTEDITOR_EXPORT TextEditor : public QOpenGLWidget {
 
         bool readOnly();
         void setReadOnly(bool readOnly);
+
+        int tabLength();
+        void setTabLength(int tabLength);
+
+        bool preferSpaces();
+        void setPreferSpaces(bool preferSpaces);
 
         enum KnownLineProperty {
             CompilationWarning,
@@ -108,6 +115,7 @@ class TTEXTEDITOR_EXPORT TextEditor : public QOpenGLWidget {
         friend TextEditorCommand;
         friend CaretTextCommand;
         friend CaretEraseCommand;
+        friend CaretTabCommand;
         friend LineTextRenderStep;
         friend LeftGutterTextRenderStep;
         friend ActiveLineBackgroundRenderStep;
@@ -148,6 +156,10 @@ class TTEXTEDITOR_EXPORT TextEditor : public QOpenGLWidget {
         // QWidget interface
     protected:
         void contextMenuEvent(QContextMenuEvent* event);
+
+        // QWidget interface
+    protected:
+        bool focusNextPrevChild(bool next);
 };
 
 #endif // TEXTEDITOR_H
