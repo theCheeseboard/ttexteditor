@@ -25,6 +25,10 @@ set(SOURCES
     rendering/texteditorperlinerenderstep.cpp
     statusbar/statusbarbutton.cpp
     commands/carettabcommand.cpp
+    merge/textmergetool.cpp
+    merge/conflictresolutiontexteditorrenderstep.cpp
+
+    merge/textmergetool.ui
 )
 
 set(HEADERS
@@ -34,6 +38,7 @@ set(HEADERS
     texteditorcolorscheme.h
     rendering/texteditorrenderstep.h
     rendering/texteditorperlinerenderstep.h
+    merge/textmergetool.h
 )
 
 set(PRIVATE_HEADERS
@@ -51,6 +56,7 @@ set(PRIVATE_HEADERS
     rendering/activelinebackgroundrenderstep.h
     rendering/linetextrenderstep.h
     statusbar/statusbarbutton.h
+    merge/conflictresolutiontexteditorrenderstep.h
 )
 
 add_library(ttexteditor SHARED ${SOURCES} ${HEADERS} ${PRIVATE_HEADERS})
