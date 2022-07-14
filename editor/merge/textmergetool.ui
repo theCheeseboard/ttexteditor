@@ -44,7 +44,7 @@
   <customwidget>
    <class>TextEditor</class>
    <extends>QWidget</extends>
-   <header location="global">texteditor.h</header>
+   <header>texteditor.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

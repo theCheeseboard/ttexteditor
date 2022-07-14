@@ -97,6 +97,15 @@ void TextMergeTool::loadGitDiff(QString diff) {
     this->loadResolutionZones();
 }
 
+void TextMergeTool::loadDiff(QString file1, QString file2) {
+    TextMergeToolPrivate::ConflictResolutionZone zone;
+    zone.leftContent = file1;
+    zone.rightContent = file2;
+    d->resolutionZones.append(zone);
+
+    this->loadResolutionZones();
+}
+
 void TextMergeTool::loadResolutionZones() {
     int leftScroll = ui->leftTextEditor->verticalScrollBar()->value();
     int rightScroll = ui->rightTextEditor->verticalScrollBar()->value();

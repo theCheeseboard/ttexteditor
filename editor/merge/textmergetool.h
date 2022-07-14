@@ -16,6 +16,7 @@ class TextMergeTool : public QWidget {
         ~TextMergeTool();
 
         void loadGitDiff(QString diff);
+        void loadDiff(QString file1, QString file2);
 
         bool isConflictResolutionCompleted();
         QString conflictResolution();
