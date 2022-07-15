@@ -57,6 +57,7 @@ set(PRIVATE_HEADERS
     rendering/linetextrenderstep.h
     statusbar/statusbarbutton.h
     merge/conflictresolutiontexteditorrenderstep.h
+    merge/differ.h
 )
 
 add_library(ttexteditor SHARED ${SOURCES} ${HEADERS} ${PRIVATE_HEADERS})

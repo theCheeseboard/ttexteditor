@@ -2,6 +2,7 @@
 #include "ui_textmergetool.h"
 
 #include "conflictresolutiontexteditorrenderstep.h"
+#include "differ.h"
 #include <QActionGroup>
 #include <QFile>
 #include <QMenu>
@@ -9,6 +10,7 @@
 #include <QPainter>
 #include <QScrollBar>
 #include <libcontemporary_global.h>
+#include <tlogger.h>
 
 struct TextMergeToolPrivate {
         struct ConflictResolutionZone {
@@ -62,46 +64,49 @@ TextMergeTool::~TextMergeTool() {
     delete d;
 }
 
-void TextMergeTool::loadGitDiff(QString diff) {
-    auto lines = diff.split("\n");
+void TextMergeTool::loadDiff(QString file1, QString file2) {
+    bool equating = false;
 
-    bool writeToLeftSide = true;
-    TextMergeToolPrivate::ConflictResolutionZone currentZone;
-    for (const auto& line : lines) {
-        if (line.startsWith("<<<<<<< ")) {
-            if (!currentZone.leftContent.isEmpty()) {
-                currentZone.rightContent = currentZone.leftContent;
-                d->resolutionZones.append(currentZone);
-            }
-            currentZone = TextMergeToolPrivate::ConflictResolutionZone();
-        } else if (line.startsWith("=======")) {
-            writeToLeftSide = false;
-        } else if (line.startsWith(">>>>>>> ")) {
-            writeToLeftSide = true;
+    auto differ = Differ(file1.split("\n"), file2.split("\n"));
+    auto results = differ.diff();
+    if (results.isEmpty()) {
+        TextMergeToolPrivate::ConflictResolutionZone zone;
+        zone.leftContent = file1;
+        zone.rightContent = file2;
+        d->resolutionZones.append(zone);
+    } else {
+        Differ<QString>::DiffResult::Type currentType = results.first().type;
 
-            d->resolutionZones.append(currentZone);
-            currentZone = TextMergeToolPrivate::ConflictResolutionZone();
-        } else {
-            if (writeToLeftSide) {
-                currentZone.leftContent.append(line + "\n");
+        TextMergeToolPrivate::ConflictResolutionZone currentZone;
+
+        for (auto result : differ.diff()) {
+            if (result.type == Differ<QString>::DiffResult::Type::Equal) {
+                if (currentType != Differ<QString>::DiffResult::Type::Equal) {
+                    // End of resolution zone
+                    d->resolutionZones.append(currentZone);
+                    currentZone = TextMergeToolPrivate::ConflictResolutionZone();
+                }
+                currentZone.leftContent += result.item + "\n";
+                currentZone.rightContent += result.item + "\n";
             } else {
-                currentZone.rightContent.append(line + "\n");
+                if (currentType == Differ<QString>::DiffResult::Type::Equal) {
+                    // End of resolution zone
+                    d->resolutionZones.append(currentZone);
+                    currentZone = TextMergeToolPrivate::ConflictResolutionZone();
+                }
+
+                if (result.type == Differ<QString>::DiffResult::Type::Remove) {
+                    currentZone.leftContent += result.item + "\n";
+                } else {
+                    currentZone.rightContent += result.item + "\n";
+                }
             }
+
+            currentType = result.type;
         }
-    }
-    if (!currentZone.leftContent.isEmpty()) {
-        currentZone.rightContent = currentZone.leftContent;
+
         d->resolutionZones.append(currentZone);
     }
-
-    this->loadResolutionZones();
-}
-
-void TextMergeTool::loadDiff(QString file1, QString file2) {
-    TextMergeToolPrivate::ConflictResolutionZone zone;
-    zone.leftContent = file1;
-    zone.rightContent = file2;
-    d->resolutionZones.append(zone);
 
     this->loadResolutionZones();
 }
