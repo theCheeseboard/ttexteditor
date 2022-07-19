@@ -1,27 +1,29 @@
 #ifndef TEXTMERGETOOL_H
 #define TEXTMERGETOOL_H
 
+#include "ttexteditor_global.h"
+#include <QCoroTask>
 #include <QWidget>
 
 namespace Ui {
-    class TextConflictResolution;
+    class TextMergeTool;
 }
 
 struct TextMergeToolPrivate;
-class TextMergeTool : public QWidget {
+class TTEXTEDITOR_EXPORT TextMergeTool : public QWidget {
         Q_OBJECT
 
     public:
         explicit TextMergeTool(QWidget* parent = nullptr);
         ~TextMergeTool();
 
-        void loadDiff(QString file1, QString file2);
+        QCoro::Task<> loadDiff(QString file1, QString file2);
 
         bool isConflictResolutionCompleted();
         QString conflictResolution();
 
     private:
-        Ui::TextConflictResolution* ui;
+        Ui::TextMergeTool* ui;
         TextMergeToolPrivate* d;
 
         void loadResolutionZones();

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TextConflictResolution</class>
- <widget class="QWidget" name="TextConflictResolution">
+ <class>TextMergeTool</class>
+ <widget class="QWidget" name="TextMergeTool">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -30,13 +30,95 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="TextEditor" name="leftTextEditor" native="true"/>
-   </item>
-   <item>
-    <widget class="QWidget" name="resolutionArea" native="true"/>
-   </item>
-   <item>
-    <widget class="TextEditor" name="rightTextEditor" native="true"/>
+    <widget class="tStackedWidget" name="stackedWidget">
+     <widget class="QWidget" name="progressPage">
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>200</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="0">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>357</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="1">
+        <widget class="tCircularSpinner" name="spinner" native="true"/>
+       </item>
+       <item row="1" column="2">
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>356</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="1">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>200</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="diffPage">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="TextEditor" name="leftTextEditor" native="true"/>
+       </item>
+       <item>
+        <widget class="QWidget" name="resolutionArea" native="true"/>
+       </item>
+       <item>
+        <widget class="TextEditor" name="rightTextEditor" native="true"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -45,6 +127,18 @@
    <class>TextEditor</class>
    <extends>QWidget</extends>
    <header>texteditor.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>tStackedWidget</class>
+   <extends>QStackedWidget</extends>
+   <header location="global">tstackedwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>tCircularSpinner</class>
+   <extends>QWidget</extends>
+   <header location="global">tcircularspinner.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

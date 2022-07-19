@@ -26,12 +26,12 @@
 #include "texteditor_p.h"
 
 TextEditor::TextEditor(QWidget* parent) :
-    QOpenGLWidget{parent} {
+    QWidget{parent} {
     d = new TextEditorPrivate();
 
-    QSurfaceFormat surfaceFormat = QSurfaceFormat::defaultFormat();
-    surfaceFormat.setSamples(10);
-    this->setFormat(surfaceFormat);
+    //    QSurfaceFormat surfaceFormat = QSurfaceFormat::defaultFormat();
+    //    surfaceFormat.setSamples(10);
+    //    this->setFormat(surfaceFormat);
 
     auto font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     this->setFont(font);
@@ -249,7 +249,7 @@ void TextEditor::setText(QString text) {
     d->undoStack->clear();
 
     // Clear all the carets
-    for (auto *caret : d->carets) {
+    for (auto* caret : d->carets) {
         if (caret->isPrimary()) {
             caret->moveCaret(0, 0);
         } else {
@@ -581,13 +581,19 @@ void TextEditor::paintEvent(QPaintEvent* event) {
 }
 
 void TextEditor::resizeEvent(QResizeEvent* event) {
-    QOpenGLWidget::resizeEvent(event);
+    //    QOpenGLWidget::resizeEvent(event);
     this->repositionElements();
 }
 
 void TextEditor::wheelEvent(QWheelEvent* event) {
-    d->vScrollBar->setValue(d->vScrollBar->value() - event->pixelDelta().y());
-    d->hScrollBar->setValue(d->hScrollBar->value() - event->pixelDelta().x());
+    if (event->hasPixelDelta()) {
+        d->vScrollBar->setValue(d->vScrollBar->value() - event->pixelDelta().y());
+        d->hScrollBar->setValue(d->hScrollBar->value() - event->pixelDelta().x());
+    } else {
+        d->vScrollBar->setValue(d->vScrollBar->value() - event->angleDelta().y() / 8);
+        d->hScrollBar->setValue(d->hScrollBar->value() - event->angleDelta().x() / 8);
+    }
+    event->accept();
 }
 
 void TextEditor::mousePressEvent(QMouseEvent* event) {

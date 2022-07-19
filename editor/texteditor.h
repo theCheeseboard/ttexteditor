@@ -26,7 +26,7 @@ class LeftGutterTextRenderStep;
 class ActiveLineBackgroundRenderStep;
 class QMenu;
 struct TextEditorPrivate;
-class TTEXTEDITOR_EXPORT TextEditor : public QOpenGLWidget {
+class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         Q_OBJECT
     public:
         explicit TextEditor(QWidget* parent = nullptr);

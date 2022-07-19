@@ -30,14 +30,17 @@ struct TextMergeToolPrivate {
         };
 
         QList<ConflictResolutionZone> resolutionZones;
+        bool diffCalculated = false;
 };
 
 TextMergeTool::TextMergeTool(QWidget* parent) :
     QWidget(parent),
-    ui(new Ui::TextConflictResolution) {
+    ui(new Ui::TextMergeTool) {
     ui->setupUi(this);
     d = new TextMergeToolPrivate();
 
+    ui->stackedWidget->setCurrentAnimation(tStackedWidget::Fade);
+    ui->spinner->setFixedSize(SC_DPI_WT(QSize(32, 32), QSize, this));
     ui->resolutionArea->setFixedWidth(SC_DPI_W(50, this));
 
     ui->leftTextEditor->setReadOnly(true);
@@ -64,11 +67,14 @@ TextMergeTool::~TextMergeTool() {
     delete d;
 }
 
-void TextMergeTool::loadDiff(QString file1, QString file2) {
+QCoro::Task<> TextMergeTool::loadDiff(QString file1, QString file2) {
+    ui->stackedWidget->setCurrentWidget(ui->progressPage);
+    d->diffCalculated = false;
+    emit conflictResolutionCompletedChanged();
     bool equating = false;
 
     auto differ = Differ(file1.split("\n"), file2.split("\n"));
-    auto results = differ.diff();
+    auto results = co_await differ.diff();
     if (results.isEmpty()) {
         TextMergeToolPrivate::ConflictResolutionZone zone;
         zone.leftContent = file1;
@@ -79,7 +85,7 @@ void TextMergeTool::loadDiff(QString file1, QString file2) {
 
         TextMergeToolPrivate::ConflictResolutionZone currentZone;
 
-        for (auto result : differ.diff()) {
+        for (const auto& result : results) {
             if (result.type == Differ<QString>::DiffResult::Type::Equal) {
                 if (currentType != Differ<QString>::DiffResult::Type::Equal) {
                     // End of resolution zone
@@ -108,6 +114,8 @@ void TextMergeTool::loadDiff(QString file1, QString file2) {
         d->resolutionZones.append(currentZone);
     }
 
+    d->diffCalculated = true;
+    emit conflictResolutionCompletedChanged();
     this->loadResolutionZones();
 }
 
@@ -176,6 +184,7 @@ void TextMergeTool::loadResolutionZones() {
     ui->leftTextEditor->verticalScrollBar()->setValue(leftScroll);
     ui->rightTextEditor->verticalScrollBar()->setValue(rightScroll);
     ui->resolutionArea->update();
+    ui->stackedWidget->setCurrentWidget(ui->diffPage);
 }
 
 QList<QPolygon> TextMergeTool::renderResolutionZones() {
@@ -208,6 +217,7 @@ QList<QPolygon> TextMergeTool::renderResolutionZones() {
 }
 
 bool TextMergeTool::isConflictResolutionCompleted() {
+    if (!d->diffCalculated) return false;
     for (auto zone : d->resolutionZones) {
         if (zone.leftContent != zone.rightContent && zone.resolveDirection == TextMergeToolPrivate::ConflictResolutionZone::NoResolution) return false;
     }
@@ -272,7 +282,34 @@ bool TextMergeTool::eventFilter(QObject* watched, QEvent* event) {
 
                 painter.setPen(border);
                 painter.drawLine(poly.at(0), poly.at(1));
-                painter.drawLine(poly.at(2), poly.at(3));
+                painter.drawLine(poly.at(2) - QPoint(0, 1), poly.at(3) - QPoint(0, 1));
+
+                QString icon;
+                switch (zone.resolveDirection) {
+                    case TextMergeToolPrivate::ConflictResolutionZone::NoResolution:
+                        icon = "vcs-resolve-none";
+                        break;
+                    case TextMergeToolPrivate::ConflictResolutionZone::ResolveLeft:
+                        icon = "vcs-resolve-left";
+                        break;
+                    case TextMergeToolPrivate::ConflictResolutionZone::ResolveRight:
+                        icon = "vcs-resolve-right";
+                        break;
+                    case TextMergeToolPrivate::ConflictResolutionZone::ResolveLeftThenRight:
+                        icon = "vcs-resolve-left-right";
+                        break;
+                    case TextMergeToolPrivate::ConflictResolutionZone::ResolveRightThenLeft:
+                        icon = "vcs-resolve-right-left";
+                        break;
+                }
+
+                QRect iconRect;
+                iconRect.setSize(SC_DPI_WT(QSize(24, 24), QSize, this));
+                iconRect.moveCenter(poly.boundingRect().center());
+
+                QImage iconImage = QIcon::fromTheme(icon).pixmap(iconRect.size()).toImage();
+                libContemporaryCommon::tintImage(iconImage, this->palette().color(QPalette::WindowText));
+                painter.drawImage(iconRect, iconImage);
             }
         } else if (event->type() == QEvent::MouseButtonPress) {
             auto* mouseEvent = static_cast<QMouseEvent*>(event);

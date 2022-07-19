@@ -1,9 +1,11 @@
 #ifndef DIFFER_H
 #define DIFFER_H
 
-#include <QCoroGenerator>
+#include <QCoroFuture>
+#include <QCoroTask>
 #include <QList>
 #include <QPoint>
+#include <QtConcurrent>
 
 template<typename T> class Differ {
     public:
@@ -24,21 +26,37 @@ template<typename T> class Differ {
             this->table.fill(0, (from.size() + 1) * (to.size() + 1));
         }
 
-        QList<DiffResult> diff() {
+        QCoro::Task<QList<DiffResult>> diff() {
             // Populate the table
-            for (auto i = 0; i < table.length(); i++) {
+
+            co_await QtConcurrent::map(this->table, [this](int& value) {
+                int i = &value - this->table.data();
                 auto coords = toCoords(i);
                 if (coords.x() == 0 || coords.y() == 0) {
                     // First row and column is always 0
-                    table[i] = 0;
+                    value = 0;
                 } else if (fromVal(coords) == toVal(coords)) {
                     // Take the value from the top left cell and add one
-                    table[i] = tableAtCoords(coords + QPoint(-1, -1)) + 1;
+                    value = tableAtCoords(coords + QPoint(-1, -1)) + 1;
                 } else {
                     // Take the max value from the adjacent cells
-                    table[i] = qMax(tableAtCoords(coords + QPoint(-1, 0)), tableAtCoords(coords + QPoint(0, -1)));
+                    value = qMax(tableAtCoords(coords + QPoint(-1, 0)), tableAtCoords(coords + QPoint(0, -1)));
                 }
-            }
+            });
+
+            //            for (auto i = 0; i < table.length(); i++) {
+            //                auto coords = toCoords(i);
+            //                if (coords.x() == 0 || coords.y() == 0) {
+            //                    // First row and column is always 0
+            //                    table[i] = 0;
+            //                } else if (fromVal(coords) == toVal(coords)) {
+            //                    // Take the value from the top left cell and add one
+            //                    table[i] = tableAtCoords(coords + QPoint(-1, -1)) + 1;
+            //                } else {
+            //                    // Take the max value from the adjacent cells
+            //                    table[i] = qMax(tableAtCoords(coords + QPoint(-1, 0)), tableAtCoords(coords + QPoint(0, -1)));
+            //                }
+            //            }
 
             QList<DiffResult> results;
             QPoint searchPoint(from.size(), to.size());
@@ -61,7 +79,8 @@ template<typename T> class Differ {
                 results.prepend(result);
             }
 
-            return results;
+            //            for (auto result : results) co_yield result;
+            co_return results;
         }
 
     private:
