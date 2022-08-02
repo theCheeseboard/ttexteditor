@@ -17,10 +17,13 @@ class TTEXTEDITOR_EXPORT TextMergeTool : public QWidget {
         explicit TextMergeTool(QWidget* parent = nullptr);
         ~TextMergeTool();
 
+        void setTitles(QString left, QString right);
         QCoro::Task<> loadDiff(QString file1, QString file2);
 
         bool isConflictResolutionCompleted();
         QString conflictResolution();
+
+        void setReadOnly(bool readOnly);
 
     private:
         Ui::TextMergeTool* ui;

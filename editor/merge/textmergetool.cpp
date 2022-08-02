@@ -31,6 +31,7 @@ struct TextMergeToolPrivate {
 
         QList<ConflictResolutionZone> resolutionZones;
         bool diffCalculated = false;
+        bool readOnly = false;
 };
 
 TextMergeTool::TextMergeTool(QWidget* parent) :
@@ -67,6 +68,11 @@ TextMergeTool::~TextMergeTool() {
     delete d;
 }
 
+void TextMergeTool::setTitles(QString left, QString right) {
+    ui->leftTitle->setText(left);
+    ui->rightTitle->setText(right);
+}
+
 QCoro::Task<> TextMergeTool::loadDiff(QString file1, QString file2) {
     ui->stackedWidget->setCurrentWidget(ui->progressPage);
     d->diffCalculated = false;
@@ -75,6 +81,8 @@ QCoro::Task<> TextMergeTool::loadDiff(QString file1, QString file2) {
 
     auto differ = Differ(file1.split("\n"), file2.split("\n"));
     auto results = co_await differ.diff();
+
+    d->resolutionZones.clear();
     if (results.isEmpty()) {
         TextMergeToolPrivate::ConflictResolutionZone zone;
         zone.leftContent = file1;
@@ -142,7 +150,12 @@ void TextMergeTool::loadResolutionZones() {
 
         // Check if this is a conflict resolution zone
         if (zone.leftContent != zone.rightContent) {
-            int base = zone.resolveDirection == TextMergeToolPrivate::ConflictResolutionZone::NoResolution ? 0 : 5;
+            int base;
+            if (d->readOnly) {
+                base = 5;
+            } else {
+                base = zone.resolveDirection == TextMergeToolPrivate::ConflictResolutionZone::NoResolution ? 0 : 5;
+            }
 
             if (leftLength == 0) {
                 ui->leftTextEditor->setLineProperty(leftLine, "conflictResolution", 4 + base);
@@ -232,6 +245,10 @@ QString TextMergeTool::conflictResolution() {
     return content;
 }
 
+void TextMergeTool::setReadOnly(bool readOnly) {
+    d->readOnly = readOnly;
+}
+
 QString TextMergeToolPrivate::ConflictResolutionZone::effectiveLeftContent() const {
     switch (resolveDirection) {
         case TextMergeToolPrivate::ConflictResolutionZone::NoResolution:
@@ -268,7 +285,7 @@ bool TextMergeTool::eventFilter(QObject* watched, QEvent* event) {
                 QColor background;
                 QColor border;
 
-                if (zone.resolveDirection == TextMergeToolPrivate::ConflictResolutionZone::NoResolution) {
+                if (!d->readOnly && zone.resolveDirection == TextMergeToolPrivate::ConflictResolutionZone::NoResolution) {
                     background = QColor(200, 0, 0, 100);
                     border = Qt::red;
                 } else {
@@ -312,6 +329,7 @@ bool TextMergeTool::eventFilter(QObject* watched, QEvent* event) {
                 painter.drawImage(iconRect, iconImage);
             }
         } else if (event->type() == QEvent::MouseButtonPress) {
+            if (d->readOnly) return false;
             auto* mouseEvent = static_cast<QMouseEvent*>(event);
             if (mouseEvent->button() != Qt::LeftButton) return false;
 
