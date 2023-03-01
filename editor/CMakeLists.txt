@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.4.0)
 
 project(lib VERSION 1.0.0 LANGUAGES CXX)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets Concurrent)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets OpenGLWidgets Concurrent)
 find_package(libcontemporary REQUIRED)
 
 set(SOURCES
@@ -68,7 +68,7 @@ set_target_properties(ttexteditor PROPERTIES
         MACOSX_FRAMEWORK_IDENTIFIER com.vicr123.theslate
         VERSION 1.0.0)
 
-target_link_libraries(ttexteditor Qt6::Widgets Qt6::OpenGLWidgets Qt6::Concurrent libcontemporary)
+target_link_libraries(ttexteditor Qt::Widgets Qt::OpenGLWidgets Qt::Concurrent libcontemporary)
 target_compile_definitions(ttexteditor PRIVATE TTEXTEDITOR_LIBRARY)
 cntp_target_public_headers(ttexteditor DESTINATION_DIRECTORY ttexteditor
     HEADERS ${HEADERS})

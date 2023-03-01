@@ -44,20 +44,6 @@ template<typename T> class Differ {
                 }
             });
 
-            //            for (auto i = 0; i < table.length(); i++) {
-            //                auto coords = toCoords(i);
-            //                if (coords.x() == 0 || coords.y() == 0) {
-            //                    // First row and column is always 0
-            //                    table[i] = 0;
-            //                } else if (fromVal(coords) == toVal(coords)) {
-            //                    // Take the value from the top left cell and add one
-            //                    table[i] = tableAtCoords(coords + QPoint(-1, -1)) + 1;
-            //                } else {
-            //                    // Take the max value from the adjacent cells
-            //                    table[i] = qMax(tableAtCoords(coords + QPoint(-1, 0)), tableAtCoords(coords + QPoint(0, -1)));
-            //                }
-            //            }
-
             QList<DiffResult> results;
             QPoint searchPoint(from.size(), to.size());
             while (searchPoint.x() != 0 && searchPoint.y() != 0) {
@@ -79,7 +65,6 @@ template<typename T> class Differ {
                 results.prepend(result);
             }
 
-            //            for (auto result : results) co_yield result;
             co_return results;
         }
 
