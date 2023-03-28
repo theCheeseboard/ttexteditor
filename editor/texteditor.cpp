@@ -24,6 +24,7 @@
 #include "rendering/linetextrenderstep.h"
 
 #include "texteditor_p.h"
+#include "texteditorcommon.h"
 
 TextEditor::TextEditor(QWidget* parent) :
     QWidget{parent} {
@@ -38,11 +39,11 @@ TextEditor::TextEditor(QWidget* parent) :
     this->setMouseTracking(true);
     this->setFocusPolicy(Qt::StrongFocus);
 
-    d->lines.append(new TextEditorPrivate::Line{"Line 1 Text"});
-    d->lines.append(new TextEditorPrivate::Line{"Line 2 Text"});
-    d->lines.append(new TextEditorPrivate::Line{"Line 3 Text"});
-    d->lines.append(new TextEditorPrivate::Line{"Line 4 Text"});
-    d->lines.append(new TextEditorPrivate::Line{"Line 5 Text"});
+    //    d->lines.append(new TextEditorPrivate::Line{"Line 1 Text"});
+    //    d->lines.append(new TextEditorPrivate::Line{"Line 2 Text"});
+    //    d->lines.append(new TextEditorPrivate::Line{"Line 3 Text"});
+    //    d->lines.append(new TextEditorPrivate::Line{"Line 4 Text"});
+    //    d->lines.append(new TextEditorPrivate::Line{"Line 5 Text"});
     d->lines.append(new TextEditorPrivate::Line{""});
     d->undoStack = new QUndoStack(this);
     connect(d->undoStack, &QUndoStack::cleanChanged, this, &TextEditor::unsavedChangesChanged);
@@ -72,8 +73,6 @@ TextEditor::TextEditor(QWidget* parent) :
     this->pushRenderStep(new ActiveLineBackgroundRenderStep(this));
 
     this->repositionElements();
-    this->setLineProperty(3, CompilationError, "Unknown type name 'Line'");
-    this->setLineProperty(1, CompilationWarning, "Unused type 'FMP'");
 }
 
 TextEditor::~TextEditor() {
@@ -240,7 +239,6 @@ QString TextEditor::text() {
     for (auto line = d->lines.cbegin(); line != d->lines.cend(); line++) {
         // TODO: Configurable line endings
         text.append((*line)->contents);
-        if (line != d->lines.cend() - 1) text.append("\n");
     }
     return text;
 }
@@ -260,11 +258,13 @@ void TextEditor::setText(QString text) {
     qDeleteAll(d->lines);
     d->lines.clear();
 
-    for (const auto& line : text.split("\n")) {
+    for (const auto& line : text.split(TextEditorCommon::newLineSplit)) {
         auto* l = new TextEditorPrivate::Line;
-        l->contents = line;
+        l->contents = line + "\n";
         d->lines.append(l);
     }
+
+    d->lines.last()->contents.truncate(d->lines.last()->contents.length() - 1);
 
     this->repositionElements();
     this->update();
@@ -377,7 +377,7 @@ QRect TextEditor::characterRect(QPoint linePos) {
     r.setTop(lineTop(linePos.y()) - d->vScrollBar->value());
     r.setHeight(lineHeight(linePos.y()));
     r.setLeft(this->fontMetrics().horizontalAdvance(contents.left(linePos.x())) + xOffset);
-    if (linePos.x() + 1 == contents.length() + 1) {
+    if (contents.length() > linePos.x() && contents.at(linePos.x()) == '\n') {
         r.setRight(this->width());
     } else {
         r.setRight(this->fontMetrics().horizontalAdvance(contents.left(linePos.x() + 1)) + xOffset);
@@ -512,7 +512,7 @@ QPoint TextEditor::hitTest(QPoint pos) {
 int TextEditor::linePosToChar(QPoint linePos) {
     int c = linePos.x();
     for (int i = 0; i < linePos.y(); i++) {
-        c += d->lines.at(i)->contents.length() + 1;
+        c += d->lines.at(i)->contents.length();
     }
     return c;
 }
@@ -522,12 +522,12 @@ QPoint TextEditor::charToLinePos(int c) {
 
     int charsLeft = c;
     for (int i = 0; i < d->lines.length(); i++) {
-        c -= d->lines.at(i)->contents.length() + 1;
+        c -= d->lines.at(i)->contents.length();
         if (c < 0) {
-            return QPoint(d->lines.at(i)->contents.length() + c + 1, i);
+            return QPoint(d->lines.at(i)->contents.length() + c, i);
         }
     }
-    return QPoint(d->lines.last()->contents.length() + 1, d->lines.length() - 1);
+    return QPoint(d->lines.last()->contents.length(), d->lines.length() - 1);
 }
 
 QMap<QString, QRect> TextEditor::renderStepOutputAreas() {
@@ -601,15 +601,17 @@ void TextEditor::mousePressEvent(QMouseEvent* event) {
         event->accept();
 
         // Set the caret
+        auto anchor = hitTest(event->pos());
+        if (d->lines.at(anchor.y())->contents.endsWith("\n") && anchor.x() == d->lines.at(anchor.y())->contents.length()) anchor.rx() -= 1;
         if (event->modifiers() == (Qt::ControlModifier | Qt::AltModifier)) {
-            addCaret(hitTest(event->pos()));
+            addCaret(anchor);
         } else {
             for (TextCaret* caret : d->carets) {
                 if (caret->isPrimary()) {
                     if (event->modifiers() == Qt::ShiftModifier) {
-                        caret->setAnchor(hitTest(event->pos()));
+                        caret->setAnchor(anchor);
                     } else {
-                        caret->moveCaret(hitTest(event->pos()));
+                        caret->moveCaret(anchor);
                     }
                     d->draggingCaret = caret;
                 } else {

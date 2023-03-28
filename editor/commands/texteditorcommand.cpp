@@ -32,11 +32,7 @@ void TextEditorCommand::pushCaretSelectionEraseCommand(int caret) {
     for (int i = d->editor->linePosToChar(c->firstAnchor()); i < d->editor->linePosToChar(c->lastAnchor()); i++) {
         QPoint linePos = d->editor->charToLinePos(i);
         QString lineContents = d->editor->d->lines.at(linePos.y())->contents;
-        if (linePos.x() == lineContents.length()) {
-            textInAnchor += "\n";
-        } else {
-            textInAnchor += lineContents.at(linePos.x());
-        }
+        textInAnchor += lineContents.at(linePos.x());
     }
 
     this->pushEditorCommand({caret, textInAnchor, false, false});

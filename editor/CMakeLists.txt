@@ -27,6 +27,7 @@ set(SOURCES
     commands/carettabcommand.cpp
     merge/textmergetool.cpp
     merge/conflictresolutiontexteditorrenderstep.cpp
+    texteditorcommon.cpp
 
     merge/textmergetool.ui
 )
@@ -39,6 +40,7 @@ set(HEADERS
     rendering/texteditorrenderstep.h
     rendering/texteditorperlinerenderstep.h
     merge/textmergetool.h
+    texteditorcommon.h
 )
 
 set(PRIVATE_HEADERS

@@ -73,26 +73,10 @@ void TextReplacementCommand::replace(QPoint anchorStart, QPoint anchorEnd, QStri
 
 void TextReplacementCommand::undo() {
     replace(d->anchorStart, d->replacementAnchorEnd, d->originalText);
-
-    //    for (auto* caret : d->editor->d->carets) {
-    //        if (caret->isPrimary()) {
-    //            caret->moveCaret(d->originalAnchorEnd);
-    //        } else {
-    //            caret->discontinueAndDelete();
-    //        }
-    //    }
 }
 
 void TextReplacementCommand::redo() {
     replace(d->anchorStart, d->originalAnchorEnd, d->replacementText);
-
-    //    for (auto* caret : d->editor->d->carets) {
-    //        if (caret->isPrimary()) {
-    //            caret->moveCaret(d->replacementAnchorEnd);
-    //        } else {
-    //            caret->discontinueAndDelete();
-    //        }
-    //    }
 }
 
 int TextReplacementCommand::id() const {

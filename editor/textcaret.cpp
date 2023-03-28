@@ -4,6 +4,7 @@
 #include "texteditor_p.h"
 #include "texteditorcolorscheme.h"
 
+#include "texteditorcommon.h"
 #include <QKeyEvent>
 #include <QPainter>
 #include <QRegularExpression>
@@ -23,11 +24,9 @@ struct TextCaretPrivate {
         tVariantAnimation* anim;
 
         static tVariantAnimation* caretBlinkTimer;
-        static QRegularExpression newLineSplit;
 };
 
 tVariantAnimation* TextCaretPrivate::caretBlinkTimer = nullptr;
-QRegularExpression TextCaretPrivate::newLineSplit = QRegularExpression("\\r\\n|\\r|\\n");
 
 TextCaret::TextCaret(int line, int pos, TextEditor* parent) :
     QObject{parent} {
@@ -218,7 +217,7 @@ TextDelta TextCaret::insertText(QString text) {
     // Mutate the text editor's text and update the carets
     TextEditorPrivate::Line* line = d->editor->d->lines.at(d->line);
 
-    QStringList splitLines = text.split(d->newLineSplit);
+    QStringList splitLines = text.split(TextEditorCommon::newLineSplit);
     QString firstLineText = splitLines.takeFirst();
 
     line->contents = line->contents.insert(d->pos, firstLineText);
@@ -236,9 +235,11 @@ TextDelta TextCaret::insertText(QString text) {
 
     // Handle new lines
     while (!splitLines.isEmpty()) {
-        auto* newLine = new TextEditorPrivate::Line();
-        newLine->contents = splitLines.takeFirst();
-        d->editor->d->lines.insert(d->line + 1, newLine);
+        line->contents.append("\n");
+
+        line = new TextEditorPrivate::Line();
+        line->contents = splitLines.takeFirst();
+        d->editor->d->lines.insert(d->line + 1, line);
         d->editor->repositionElements();
 
         for (TextCaret* caret : d->editor->d->carets) {
@@ -246,7 +247,7 @@ TextDelta TextCaret::insertText(QString text) {
                 caret->moveCaret(caret->d->line + 1, caret->d->pos);
             }
         }
-        this->moveCaret(d->line + 1, newLine->contents.length());
+        this->moveCaret(d->line + 1, line->contents.length());
     }
 
     d->editor->d->lines.at(d->line)->contents.append(restOfLine);
@@ -270,7 +271,8 @@ TextDelta TextCaret::backspace() {
 
         TextEditorPrivate::Line* lineToRemove = d->editor->d->lines.at(d->line);
         TextEditorPrivate::Line* lineToCombineTo = d->editor->d->lines.at(d->line - 1);
-        int newCaretPos = lineToCombineTo->contents.length();
+        int newCaretPos = lineToCombineTo->contents.length() - 1;
+        lineToCombineTo->contents.truncate(lineToCombineTo->contents.length() - 1);
         lineToCombineTo->contents += lineToRemove->contents;
 
         int currentLine = d->line;
@@ -339,9 +341,8 @@ void TextCaret::moveCaret(QRect newPos) {
     d->editor->simplifyCarets();
 }
 
-void TextCaret::recalculateAnchor()
-{
-    //TODO: Parallelism???
+void TextCaret::recalculateAnchor() {
+    // TODO: Parallelism???
     QPolygon anchorPoly;
     int firstAnchor = d->editor->linePosToChar(this->firstAnchor());
     int lastAnchor = d->editor->linePosToChar(this->lastAnchor());
