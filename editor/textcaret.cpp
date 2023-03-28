@@ -316,6 +316,10 @@ QRect TextCaret::caretRect() {
     return d->anim->currentValue().toRect();
 }
 
+QRect TextCaret::targetCaretRect() {
+    return d->anim->endValue().toRect();
+}
+
 void TextCaret::discontinueAndDelete() {
     if (d->discontinued) return;
 

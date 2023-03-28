@@ -48,6 +48,7 @@ class TextCaret : public QObject {
 
         QPoint linePos();
         QRect caretRect();
+        QRect targetCaretRect();
 
         void discontinueAndDelete();
         bool isDiscontinued();

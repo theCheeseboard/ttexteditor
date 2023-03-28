@@ -10,6 +10,7 @@
 #include <QPainter>
 #include <QRandomGenerator64>
 #include <QScrollBar>
+#include <QTimer>
 #include <QWheelEvent>
 #include <libcontemporary_global.h>
 
@@ -205,6 +206,16 @@ void TextEditor::repositionElements() {
 
     int fullHeight = this->lineTop(d->lines.length() - 1) + this->lineHeight(d->lines.length() - 1) + this->height() / 2;
     d->vScrollBar->setMaximum(qMax(0, fullHeight - this->height()));
+
+    auto maxWidth = 0;
+    for (auto i = 0; i < d->lines.length(); i++) {
+        auto lineContents = d->lines.at(i)->contents;
+        int x = lineContents.length();
+        if (lineContents.endsWith("\n") && lineContents.length() >= 2) x -= 2;
+        auto r = characterRect({x, i}, false);
+        maxWidth = qMax(maxWidth, r.right() + 100);
+    }
+    d->hScrollBar->setMaximum(qMax(0, maxWidth - renderStepOutputArea("LineText").width()));
 }
 
 int TextEditor::lineTop(int line) {
@@ -221,7 +232,7 @@ int TextEditor::lineTop(int line) {
 }
 
 int TextEditor::lineHeight(int line) {
-    return this->fontMetrics().height() + SC_DPI_W(4, this);
+    return this->fontMetrics().height() + 4;
 }
 
 int TextEditor::firstLineOnScreen() {
@@ -345,6 +356,28 @@ QPoint TextEditor::caretAnchorEnd(int caret) {
     return d->carets.at(caret)->lastAnchor();
 }
 
+void TextEditor::scrollToPrimaryCaret() {
+    QTimer::singleShot(0, this, [this] {
+        int yDelta = 0;
+        int xDelta = 0;
+        auto outputArea = renderStepOutputArea("LineText");
+        auto rect = d->carets.first()->targetCaretRect();
+
+        if (rect.bottom() - d->vScrollBar->value() > this->height()) {
+            yDelta = rect.bottom() - this->height() - d->vScrollBar->value() + 50;
+        }
+        if (rect.right() - d->hScrollBar->value() > this->width()) {
+            xDelta = rect.right() - this->width() - d->hScrollBar->value() - 50;
+        }
+        if (rect.left() - d->hScrollBar->value() < this->width()) {
+            xDelta = rect.left() - this->width() - d->hScrollBar->value() + 50;
+        }
+
+        d->vScrollBar->setValue(d->vScrollBar->value() + yDelta);
+        d->hScrollBar->setValue(d->hScrollBar->value() + xDelta);
+    });
+}
+
 void TextEditor::replaceText(QPoint anchorStart, QPoint anchorEnd, QString replacement) {
     d->undoStack->push(new TextReplacementCommand(this, anchorStart, anchorEnd, replacement));
 }
@@ -368,13 +401,13 @@ void TextEditor::paste() {
     d->undoStack->push(new CaretTextCommand(this, QApplication::clipboard()->text()));
 }
 
-QRect TextEditor::characterRect(QPoint linePos) {
+QRect TextEditor::characterRect(QPoint linePos, bool withScrollBars) {
     QString contents = d->lines.at(linePos.y())->contents;
 
-    int xOffset = renderStepOutputArea("LineText").left() - d->hScrollBar->value();
+    int xOffset = renderStepOutputArea("LineText").left() - (withScrollBars ? d->hScrollBar->value() : 0);
 
     QRect r;
-    r.setTop(lineTop(linePos.y()) - d->vScrollBar->value());
+    r.setTop(lineTop(linePos.y()) - (withScrollBars ? d->vScrollBar->value() : 0));
     r.setHeight(lineHeight(linePos.y()));
     r.setLeft(this->fontMetrics().horizontalAdvance(contents.left(linePos.x())) + xOffset);
     if (contents.length() > linePos.x() && contents.at(linePos.x()) == '\n') {
@@ -383,6 +416,11 @@ QRect TextEditor::characterRect(QPoint linePos) {
         r.setRight(this->fontMetrics().horizontalAdvance(contents.left(linePos.x() + 1)) + xOffset);
     }
     return r;
+}
+
+void TextEditor::signalTextChanged(QList<TextDelta> deltas) {
+    repositionElements();
+    emit this->textChanged(deltas);
 }
 
 void TextEditor::drawLine(int line, QPainter* painter) {

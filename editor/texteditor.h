@@ -98,6 +98,7 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         int numberOfCarets();
         QPoint caretAnchorStart(int caret);
         QPoint caretAnchorEnd(int caret);
+        void scrollToPrimaryCaret();
 
         void replaceText(QPoint anchorStart, QPoint anchorEnd, QString replacement);
 
@@ -106,7 +107,7 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         void paste();
 
         QPoint hitTest(QPoint pos);
-        QRect characterRect(QPoint linePos);
+        QRect characterRect(QPoint linePos, bool withScrollBars = true);
 
     signals:
         void knownLinePropertyChanged(int line, TextEditor::KnownLineProperty property);
@@ -130,6 +131,8 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         friend ActiveLineBackgroundRenderStep;
         friend TextReplacementCommand;
         TextEditorPrivate* d;
+
+        void signalTextChanged(QList<TextDelta> deltas);
 
     private:
         void repositionElements();

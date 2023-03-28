@@ -16,6 +16,8 @@ TextEditorCommand::TextEditorCommand(TextEditor* editor) {
     d = new TextEditorCommandPrivate();
     d->editor = editor;
     d->initialCarets = d->editor->d->saveCarets();
+
+    editor->scrollToPrimaryCaret();
 }
 
 TextEditorCommand::~TextEditorCommand() {
@@ -55,7 +57,7 @@ void TextEditorCommand::undo() {
     }
     d->editor->d->loadCarets(d->initialCarets);
 
-    emit d->editor->textChanged(deltas);
+    d->editor->signalTextChanged(deltas);
 }
 
 void TextEditorCommand::redo() {
@@ -77,7 +79,7 @@ void TextEditorCommand::redo() {
 
     if (d->lastCarets.isEmpty()) d->lastCarets = d->editor->d->saveCarets();
 
-    emit d->editor->textChanged(deltas);
+    d->editor->signalTextChanged(deltas);
 }
 
 bool TextEditorCommand::mergeWith(const QUndoCommand* other) {

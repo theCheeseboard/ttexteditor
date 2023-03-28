@@ -68,7 +68,7 @@ void TextReplacementCommand::replace(QPoint anchorStart, QPoint anchorEnd, QStri
     for (auto i = 0; i < deletions; i++) deltas.append(caret->backspace());
     deltas.append(caret->insertText(replacement));
 
-    emit d->editor->textChanged(deltas);
+    d->editor->signalTextChanged(deltas);
 }
 
 void TextReplacementCommand::undo() {

@@ -63,9 +63,9 @@ void ConflictResolutionTextEditorRenderStep::paintLine(int line, QPainter* paint
 
     QRect lineRect;
     lineRect.setHeight(editor->lineHeight(line));
-    lineRect.setWidth(editor->width());
     lineRect.moveTop(editor->lineTop(line) - editor->verticalScrollBar()->value());
-    lineRect.moveLeft(0 - editor->horizontalScrollBar()->value());
+    lineRect.moveLeft(0);
+    lineRect.setRight(editor->width());
 
     if (resolutionStage != 4) painter->fillRect(lineRect, background);
     painter->setPen(border);
