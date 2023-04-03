@@ -256,8 +256,9 @@ TextDelta TextCaret::insertText(QString text) {
 }
 
 TextDelta TextCaret::backspace() {
-    if (d->pos == 0) {
-        if (d->line == 0) { // Can't backspace behind first line
+    auto editPoint = this->lastAnchor();
+    if (editPoint.x() == 0) {
+        if (editPoint.y() == 0) { // Can't backspace behind first line
             TextDelta delta;
             delta.startEdit = this->firstAnchor();
             delta.endEdit = this->lastAnchor();
@@ -267,13 +268,16 @@ TextDelta TextCaret::backspace() {
 
         TextDelta delta;
         delta.replacement = "";
-        delta.endEdit = this->linePos();
+        delta.endEdit = editPoint;
 
-        TextEditorPrivate::Line* lineToRemove = d->editor->d->lines.at(d->line);
-        TextEditorPrivate::Line* lineToCombineTo = d->editor->d->lines.at(d->line - 1);
+        TextEditorPrivate::Line* lineToRemove = d->editor->d->lines.at(editPoint.y());
+        TextEditorPrivate::Line* lineToCombineTo = d->editor->d->lines.at(editPoint.y() - 1);
         int newCaretPos = lineToCombineTo->contents.length() - 1;
         lineToCombineTo->contents.truncate(lineToCombineTo->contents.length() - 1);
         lineToCombineTo->contents += lineToRemove->contents;
+
+        if (d->anchor > 0) d->anchor--;
+        if (d->anchor < 0) d->anchor++;
 
         int currentLine = d->line;
         for (TextCaret* caret : d->editor->d->carets) {
@@ -287,23 +291,25 @@ TextDelta TextCaret::backspace() {
         d->editor->d->lines.removeAll(lineToRemove);
         d->editor->repositionElements();
 
-        delta.startEdit = this->linePos();
+        delta.startEdit = editPoint;
         return delta;
     } else {
         TextDelta delta;
         delta.replacement = "";
-        delta.endEdit = this->linePos();
+        delta.endEdit = editPoint;
 
-        TextEditorPrivate::Line* line = d->editor->d->lines.at(d->line);
-        line->contents.remove(d->pos - 1, 1);
+        TextEditorPrivate::Line* line = d->editor->d->lines.at(editPoint.y());
+        line->contents.remove(editPoint.x() - 1, 1);
+        if (d->anchor > 0) d->anchor--;
+        if (d->anchor < 0) d->anchor++;
 
         for (TextCaret* caret : d->editor->d->carets) {
-            if (caret->d->line == d->line && caret->d->pos >= d->pos) {
+            if (caret->d->line == d->line && caret->d->pos >= editPoint.x()) {
                 caret->moveCaret(caret->d->line, caret->d->pos - 1);
             }
         }
 
-        delta.startEdit = this->linePos();
+        delta.startEdit = editPoint;
         return delta;
     }
 }
