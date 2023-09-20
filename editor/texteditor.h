@@ -24,6 +24,7 @@ class CaretTabCommand;
 class TextReplacementCommand;
 class LeftGutterTextRenderStep;
 class ActiveLineBackgroundRenderStep;
+class TextEditorSyntaxHighlighter;
 class QMenu;
 struct TextEditorPrivate;
 class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
@@ -46,7 +47,9 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
 
         enum KnownLineProperty {
             CompilationWarning,
-            CompilationError
+            CompilationError,
+            HighlightState,
+            HighlightFormat
         };
 
         void setLineProperty(int line, KnownLineProperty property, QVariant value);
@@ -54,6 +57,7 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         void setLinePropertyMulti(int line, QString property, QVariant value);
         void clearLineProperties(QString property);
         void clearLineProperties(KnownLineProperty property);
+        void clearLineProperty(int line, KnownLineProperty property);
         QVariantList lineProperties(int line, KnownLineProperty property);
         QVariantList lineProperties(int line, QString property);
 
@@ -130,6 +134,7 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         friend LeftGutterTextRenderStep;
         friend ActiveLineBackgroundRenderStep;
         friend TextReplacementCommand;
+        friend TextEditorSyntaxHighlighter;
         TextEditorPrivate* d;
 
         void signalTextChanged(QList<TextDelta> deltas);

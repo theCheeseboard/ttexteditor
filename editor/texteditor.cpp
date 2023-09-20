@@ -30,6 +30,7 @@
 TextEditor::TextEditor(QWidget* parent) :
     QWidget{parent} {
     d = new TextEditorPrivate();
+    d->highlighter.setTextEditor(this);
 
     //    QSurfaceFormat surfaceFormat = QSurfaceFormat::defaultFormat();
     //    surfaceFormat.setSamples(10);
@@ -53,6 +54,12 @@ TextEditor::TextEditor(QWidget* parent) :
     d->vScrollBar->setFixedWidth(this->style()->pixelMetric(QStyle::PM_ScrollBarExtent));
     d->vScrollBar->setParent(this);
     connect(d->vScrollBar, &QScrollBar::valueChanged, this, QOverload<>::of(&TextEditor::repaint));
+    connect(d->vScrollBar, &QScrollBar::valueChanged, this, [this] {
+        auto lastLine = this->lastLineOnScreen();
+        if (this->lineProperties(lastLine, TextEditor::HighlightState).isEmpty()) {
+            d->highlighter.highlightFrom(lastLine);
+        }
+    });
     d->vScrollBar->show();
 
     d->hScrollBar = new QScrollBar(Qt::Horizontal);
@@ -145,6 +152,10 @@ void TextEditor::clearLineProperties(QString property) {
 
 void TextEditor::clearLineProperties(KnownLineProperty property) {
     this->clearLineProperties(TextEditorPrivate::lineProperties.value(property));
+}
+
+void TextEditor::clearLineProperty(int line, KnownLineProperty property) {
+    d->lines.at(line)->properties.remove(TextEditorPrivate::lineProperties.value(property));
 }
 
 QVariantList TextEditor::lineProperties(int line, KnownLineProperty property) {
@@ -420,6 +431,9 @@ QRect TextEditor::characterRect(QPoint linePos, bool withScrollBars) {
 
 void TextEditor::signalTextChanged(QList<TextDelta> deltas) {
     repositionElements();
+    if (!deltas.isEmpty()) {
+        d->highlighter.highlightFrom(deltas.constFirst().startEdit.y());
+    }
     emit this->textChanged(deltas);
 }
 

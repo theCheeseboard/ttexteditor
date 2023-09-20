@@ -3,6 +3,7 @@
 
 #include "textcaret.h"
 #include "texteditor.h"
+#include "texteditorsyntaxhighlighter.h"
 #include <QMultiMap>
 #include <QScrollBar>
 #include <QString>
@@ -44,6 +45,8 @@ struct TextEditorPrivate {
 #else
         TextEditor::LineEndingType lineEndingType = TextEditor::UnixLineEndings;
 #endif
+
+        TextEditorSyntaxHighlighter highlighter;
 
         static const QMap<TextEditor::KnownLineProperty, QString> lineProperties;
         static const QList<TextEditor::KnownLineProperty> multiLineProperties;

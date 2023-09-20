@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.4.0)
 project(lib VERSION 1.0.0 LANGUAGES CXX)
 
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets OpenGLWidgets Concurrent)
+find_package(KF${QT_VERSION_MAJOR}SyntaxHighlighting)
 find_package(libcontemporary REQUIRED)
 
 set(SOURCES
@@ -28,6 +29,7 @@ set(SOURCES
     merge/textmergetool.cpp
     merge/conflictresolutiontexteditorrenderstep.cpp
     texteditorcommon.cpp
+    texteditorsyntaxhighlighter.cpp
 
     merge/textmergetool.ui
 )
@@ -41,6 +43,7 @@ set(HEADERS
     rendering/texteditorperlinerenderstep.h
     merge/textmergetool.h
     texteditorcommon.h
+    texteditorsyntaxhighlighter.h
 )
 
 set(PRIVATE_HEADERS
@@ -70,7 +73,7 @@ set_target_properties(ttexteditor PROPERTIES
         MACOSX_FRAMEWORK_IDENTIFIER com.vicr123.theslate
         VERSION 1.0.0)
 
-target_link_libraries(ttexteditor Qt::Widgets Qt::OpenGLWidgets Qt::Concurrent libcontemporary)
+target_link_libraries(ttexteditor Qt::Widgets Qt::OpenGLWidgets Qt::Concurrent KF${QT_VERSION_MAJOR}::SyntaxHighlighting libcontemporary)
 target_compile_definitions(ttexteditor PRIVATE TTEXTEDITOR_LIBRARY)
 cntp_target_public_headers(ttexteditor DESTINATION_DIRECTORY ttexteditor
     HEADERS ${HEADERS})

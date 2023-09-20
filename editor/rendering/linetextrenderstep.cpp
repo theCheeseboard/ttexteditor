@@ -3,6 +3,7 @@
 #include "libcontemporary_global.h"
 #include "texteditor.h"
 #include "texteditor_p.h"
+#include "texteditorsyntaxhighlighter.h"
 #include <QPainter>
 #include <QRect>
 #include <QScrollBar>
@@ -38,16 +39,55 @@ void LineTextRenderStep::paintLine(int line, QPainter* painter, QRect outputBoun
     lineRect.moveTop(editor->lineTop(line) - editor->verticalScrollBar()->value());
     lineRect.moveLeft(0 - editor->horizontalScrollBar()->value());
 
-    painter->setFont(editor->font());
-    QRect lineTextRect;
-    QString lineText = editor->d->lines.at(line)->contents;
-    lineTextRect.setWidth(editor->fontMetrics().horizontalAdvance(lineText));
-    lineTextRect.setHeight(editor->fontMetrics().height());
-    lineTextRect.moveCenter(lineRect.center());
-    lineTextRect.moveLeft(outputBounds.left() - editor->horizontalScrollBar()->value());
+    auto theme = editor->d->highlighter.theme();
+    auto x = theme.filePath();
+    auto y = theme.name();
+    auto z = theme.isValid();
+    auto formats = editor->lineProperties(line, TextEditor::HighlightFormat);
+    for (auto formatVariant : formats) {
+        painter->save();
+        //        auto formatStr = formatVariant.toString();
 
-    painter->setClipRect(outputBounds);
-    painter->setClipping(true);
-    painter->drawText(lineTextRect, Qt::AlignVCenter | Qt::AlignLeft, lineText);
+        //        auto parts = formatStr.split(",");
+        //        auto offset = parts.at(0).toInt();
+        //        auto length = parts.at(1).toInt();
+        //        auto textFormatId = parts.at(2).toInt();
+
+        //        auto textFormat = editor->d->highlighter.formatForId(textFormatId);
+        auto format = formatVariant.value<TextEditorSyntaxHighlighterFormat>();
+        auto textFormat = format.format;
+
+        QRect lineTextRect;
+        auto preText = editor->d->lines.at(line)->contents.left(format.offset);
+        auto lineText = editor->d->lines.at(line)->contents.mid(format.offset, format.length);
+        lineTextRect.setWidth(editor->fontMetrics().horizontalAdvance(lineText));
+        lineTextRect.setHeight(editor->fontMetrics().height());
+        lineTextRect.moveCenter(lineRect.center());
+        lineTextRect.moveLeft(outputBounds.left() - editor->horizontalScrollBar()->value() + editor->fontMetrics().horizontalAdvance(preText));
+        painter->setClipRect(outputBounds);
+        painter->setClipping(true);
+
+        auto fnt = editor->font();
+        //        if (textFormat.hasTextColorOverride()) {
+        painter->setPen(textFormat.textColor(theme));
+        //        }
+        if (textFormat.hasBoldOverride()) {
+            fnt.setBold(textFormat.isBold(theme));
+        }
+        if (textFormat.hasItalicOverride()) {
+            fnt.setItalic(textFormat.isItalic(theme));
+        }
+        if (textFormat.hasUnderlineOverride()) {
+            fnt.setUnderline(textFormat.isUnderline(theme));
+        }
+        if (textFormat.hasStrikeThroughOverride()) {
+            fnt.setStrikeOut(textFormat.isStrikeThrough(theme));
+        }
+
+        painter->setFont(fnt);
+        painter->drawText(lineTextRect, Qt::AlignVCenter | Qt::AlignLeft, lineText);
+        painter->restore();
+    }
+
     painter->restore();
 }

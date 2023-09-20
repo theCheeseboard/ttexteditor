@@ -2,7 +2,8 @@ set(ttexteditor_VERSION 1.0.0)
 
 @PACKAGE_INIT@
 
-find_package(Qt6 REQUIRED OpenGLWidgets Concurrent)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED OpenGLWidgets Concurrent)
+find_package(KF${QT_VERSION_MAJOR}SyntaxHighlighting)
 
 include("${CMAKE_CURRENT_LIST_DIR}/ttexteditorTargets.cmake")
 
