@@ -65,7 +65,9 @@ set(PRIVATE_HEADERS
     merge/differ.h
 )
 
-add_library(ttexteditor SHARED ${SOURCES} ${HEADERS} ${PRIVATE_HEADERS})
+add_library(ttexteditor SHARED ${SOURCES} ${HEADERS} ${PRIVATE_HEADERS}
+    syntaxhighlightingresources/themes/contemporary.theme
+    syntaxhighlightingresources/themes/contemporary-dark.theme)
 cntp_init(ttexteditor 20)
 set_target_properties(ttexteditor PROPERTIES
         OUTPUT_NAME ttexteditor
@@ -87,6 +89,13 @@ ELSE()
     set(HEADER_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/ttexteditor)
     set(LIBRARY_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
 ENDIF()
+
+file(GLOB THEME_FILES "${CMAKE_CURRENT_SOURCE_DIR}/syntaxhighlightingresources/themes/*")
+qt_add_resources(ttexteditor "ttexteditor_themes"
+    PREFIX "/ttexteditor/syntaxhighlightingresources/themes"
+    BASE "${CMAKE_CURRENT_SOURCE_DIR}/syntaxhighlightingresources/themes/"
+    FILES "${THEME_FILES}"
+)
 
 configure_package_config_file(ttexteditorConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/ttexteditorConfig.cmake
         INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR}

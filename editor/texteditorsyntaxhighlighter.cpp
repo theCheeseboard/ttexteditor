@@ -16,8 +16,11 @@ struct TextEditorSyntaxHighlighterPrivate {
 
 TextEditorSyntaxHighlighter::TextEditorSyntaxHighlighter() :
     KSyntaxHighlighting::AbstractHighlighter{} {
+    Q_INIT_RESOURCE(ttexteditor_themes);
+
     d = new TextEditorSyntaxHighlighterPrivate();
-    this->setTheme(d->repo.theme("Breeze Dark"));
+    d->repo.addCustomSearchPath(":/ttexteditor/syntaxhighlightingresources");
+    this->setTheme(d->repo.theme("Contemporary Dark"));
     //    this->setDefinition(d->repo.definitionForMimeType("application/json"));
     this->setDefinition(d->repo.definitionForName("C++"));
     //    this->setTheme(d->repo.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme));
