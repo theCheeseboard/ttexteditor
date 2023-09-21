@@ -3,6 +3,8 @@
 
 #include "conflictresolutiontexteditorrenderstep.h"
 #include "differ.h"
+#include "texteditorsyntaxhighlighter.h"
+#include <KSyntaxHighlighting/definition.h>
 #include <QActionGroup>
 #include <QFile>
 #include <QMenu>
@@ -125,6 +127,11 @@ QCoro::Task<> TextMergeTool::loadDiff(QString file1, QString file2) {
     d->diffCalculated = true;
     emit conflictResolutionCompletedChanged();
     this->loadResolutionZones();
+}
+
+void TextMergeTool::setFileName(QString fileName) {
+    ui->leftTextEditor->highlighter()->setDefinition(ui->leftTextEditor->highlighter()->repo()->definitionForFileName(fileName));
+    ui->rightTextEditor->highlighter()->setDefinition(ui->rightTextEditor->highlighter()->repo()->definitionForFileName(fileName));
 }
 
 void TextMergeTool::loadResolutionZones() {

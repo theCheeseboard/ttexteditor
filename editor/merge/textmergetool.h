@@ -19,6 +19,7 @@ class TTEXTEDITOR_EXPORT TextMergeTool : public QWidget {
 
         void setTitles(QString left, QString right);
         QCoro::Task<> loadDiff(QString file1, QString file2);
+        void setFileName(QString fileName);
 
         bool isConflictResolutionCompleted();
         QString conflictResolution();
