@@ -64,6 +64,7 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         void pushRenderStep(TextEditorRenderStep* renderStep);
 
         TextEditorColorScheme* colorScheme();
+        TextEditorSyntaxHighlighter* highlighter();
 
         QScrollBar* verticalScrollBar();
         QScrollBar* horizontalScrollBar();
@@ -122,6 +123,7 @@ class TTEXTEDITOR_EXPORT TextEditor : public QWidget {
         void textChanged(QList<TextDelta> deltas);
         void readOnlyChanged(bool readOnly);
         void keyTyped(QString keyText);
+        void highlightingDefinitionChanged();
 
     protected:
         friend TextCaret;

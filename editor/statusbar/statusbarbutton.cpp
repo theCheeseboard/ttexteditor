@@ -97,6 +97,7 @@ void StatusBarButton::mousePressEvent(QMouseEvent* event) {
     d->anim->setStartValue(d->anim->currentValue());
     d->anim->setEndValue(d->pressed);
     d->anim->start();
+    QPushButton::mousePressEvent(event);
 }
 
 void StatusBarButton::mouseReleaseEvent(QMouseEvent* event) {
@@ -104,4 +105,5 @@ void StatusBarButton::mouseReleaseEvent(QMouseEvent* event) {
     d->anim->setStartValue(d->anim->currentValue());
     d->anim->setEndValue(d->raised);
     d->anim->start();
+    QPushButton::mouseReleaseEvent(event);
 }

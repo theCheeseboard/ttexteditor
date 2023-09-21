@@ -65,9 +65,7 @@ set(PRIVATE_HEADERS
     merge/differ.h
 )
 
-add_library(ttexteditor SHARED ${SOURCES} ${HEADERS} ${PRIVATE_HEADERS}
-    syntaxhighlightingresources/themes/contemporary.theme
-    syntaxhighlightingresources/themes/contemporary-dark.theme)
+add_library(ttexteditor SHARED ${SOURCES} ${HEADERS} ${PRIVATE_HEADERS})
 cntp_init(ttexteditor 20)
 set_target_properties(ttexteditor PROPERTIES
         OUTPUT_NAME ttexteditor

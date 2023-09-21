@@ -177,6 +177,10 @@ TextEditorColorScheme* TextEditor::colorScheme() {
     return d->colorScheme;
 }
 
+TextEditorSyntaxHighlighter* TextEditor::highlighter() {
+    return &d->highlighter;
+}
+
 QScrollBar* TextEditor::verticalScrollBar() {
     return d->vScrollBar;
 }
@@ -288,6 +292,7 @@ void TextEditor::setText(QString text) {
 
     d->lines.last()->contents.truncate(d->lines.last()->contents.length() - 1);
 
+    d->highlighter.highlightFrom(this->lastLineOnScreen());
     this->repositionElements();
     this->update();
 }

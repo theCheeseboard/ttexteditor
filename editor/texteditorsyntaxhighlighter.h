@@ -3,6 +3,7 @@
 
 #include <KSyntaxHighlighting/abstracthighlighter.h>
 #include <KSyntaxHighlighting/format.h>
+#include <KSyntaxHighlighting/repository.h>
 
 class TextEditor;
 struct TextEditorSyntaxHighlighterPrivate;
@@ -11,8 +12,12 @@ class TextEditorSyntaxHighlighter : public KSyntaxHighlighting::AbstractHighligh
         explicit TextEditorSyntaxHighlighter();
         ~TextEditorSyntaxHighlighter();
 
+        KSyntaxHighlighting::Repository* repo();
+
         void setTextEditor(TextEditor* textEditor);
         void highlightFrom(int line);
+
+        void setDefinition(const KSyntaxHighlighting::Definition& def);
 
         KSyntaxHighlighting::Format formatForId(int id);
 

@@ -30,56 +30,157 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="TextEditor" name="editor" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+    <widget class="tStackedWidget" name="stackedWidget">
+     <property name="currentIndex">
+      <number>1</number>
      </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QWidget" name="widget" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <property name="leftMargin">
-       <number>9</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>9</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="StatusBarButton" name="lineEndingsSelector">
-        <property name="text">
-         <string notr="true">PushButton</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <widget class="QWidget" name="editorPage">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="TextEditor" name="editor" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="widget" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="leftMargin">
+           <number>9</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>9</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="StatusBarButton" name="highlightingDefinitionSelector">
+            <property name="text">
+             <string notr="true">Plain Text</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="StatusBarButton" name="lineEndingsSelector">
+            <property name="text">
+             <string notr="true">LF</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="highlightDefinitionSelectPage">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="tTitleLabel" name="titleLabel">
+         <property name="text">
+          <string>Select Highlighting Language</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineEdit">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="frame">
+          <bool>false</bool>
+         </property>
+         <property name="placeholderText">
+          <string>Search</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="Line" name="singlePixelHorizontalLine">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>1</height>
+          </size>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="highlightingDefinitionList">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>tStackedWidget</class>
+   <extends>QStackedWidget</extends>
+   <header location="global">tstackedwidget.h</header>
+   <container>1</container>
+   <slots>
+    <signal>switchingFrame(int)</signal>
+   </slots>
+  </customwidget>
   <customwidget>
    <class>TextEditor</class>
    <extends>QWidget</extends>
@@ -90,6 +191,14 @@
    <class>StatusBarButton</class>
    <extends>QPushButton</extends>
    <header>statusbar/statusbarbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>tTitleLabel</class>
+   <extends>QLabel</extends>
+   <header location="global">ttitlelabel.h</header>
+   <slots>
+    <signal>backButtonClicked()</signal>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -9,7 +9,7 @@
 
 struct TextEditorSyntaxHighlighterPrivate {
         KSyntaxHighlighting::Repository repo;
-        TextEditor* parent;
+        TextEditor* parent = nullptr;
 
         int line = 0;
 };
@@ -28,6 +28,10 @@ TextEditorSyntaxHighlighter::TextEditorSyntaxHighlighter() :
 
 TextEditorSyntaxHighlighter::~TextEditorSyntaxHighlighter() {
     delete d;
+}
+
+KSyntaxHighlighting::Repository* TextEditorSyntaxHighlighter::repo() {
+    return &d->repo;
 }
 
 void TextEditorSyntaxHighlighter::setTextEditor(TextEditor* textEditor) {
@@ -70,4 +74,13 @@ KSyntaxHighlighting::Format TextEditorSyntaxHighlighter::formatForId(int id) {
 
 void TextEditorSyntaxHighlighter::applyFormat(int offset, int length, const KSyntaxHighlighting::Format& format) {
     d->parent->setLineProperty(d->line, TextEditor::HighlightFormat, QVariant::fromValue(TextEditorSyntaxHighlighterFormat{offset, length, format}));
+}
+
+void TextEditorSyntaxHighlighter::setDefinition(const KSyntaxHighlighting::Definition& def) {
+    KSyntaxHighlighting::AbstractHighlighter::setDefinition(def);
+    if (d->parent) {
+        d->parent->clearLineProperties(TextEditor::HighlightState);
+        this->highlightFrom(d->parent->lastLineOnScreen());
+        emit d->parent->highlightingDefinitionChanged();
+    }
 }
