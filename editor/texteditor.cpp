@@ -4,6 +4,7 @@
 #include "commands/textreplacementcommand.h"
 #include "textcaret.h"
 #include "texteditorcolorscheme.h"
+#include <KSyntaxHighlighting/definition.h>
 #include <QClipboard>
 #include <QFontDatabase>
 #include <QMenu>
@@ -299,6 +300,7 @@ void TextEditor::setText(QString text) {
 
 void TextEditor::setCurrentFile(QUrl currentFile) {
     d->currentFile = currentFile;
+    d->highlighter.setDefinition(d->highlighter.repo()->definitionForFileName(currentFile.fileName()));
     emit currentFileChanged(currentFile);
 }
 
