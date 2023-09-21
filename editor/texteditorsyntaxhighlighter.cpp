@@ -21,9 +21,6 @@ TextEditorSyntaxHighlighter::TextEditorSyntaxHighlighter() :
     d = new TextEditorSyntaxHighlighterPrivate();
     d->repo.addCustomSearchPath(":/ttexteditor/syntaxhighlightingresources");
     this->setTheme(d->repo.theme("Contemporary Dark"));
-    //    this->setDefinition(d->repo.definitionForMimeType("application/json"));
-    this->setDefinition(d->repo.definitionForName("C++"));
-    //    this->setTheme(d->repo.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme));
 }
 
 TextEditorSyntaxHighlighter::~TextEditorSyntaxHighlighter() {
@@ -40,6 +37,7 @@ void TextEditorSyntaxHighlighter::setTextEditor(TextEditor* textEditor) {
 
 void TextEditorSyntaxHighlighter::highlightFrom(int line) {
     KSyntaxHighlighting::State state;
+    if (line >= d->parent->numLines()) line = d->parent->numLines() - 1;
     while (line != 0) {
         // TODO: Retrieve the state
         auto states = d->parent->lineProperties(line - 1, TextEditor::HighlightState);
